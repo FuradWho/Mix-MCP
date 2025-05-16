@@ -10,6 +10,9 @@
 /_output/*
 /tmp/*
 /configs/*
+/mcp_yuyao/__pycache__
+/mcp_yuyao/.venv
+/graphrag/ragtest/.env
 
 # Binaries for programs and plugins
 *.exe
