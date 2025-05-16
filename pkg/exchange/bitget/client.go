@@ -262,3 +262,149 @@ func (c *Client) GetMarketPrice(symbol string) (string, error) {
 	err = json.Unmarshal(data, &result)
 	return result.Data.Close, err
 }
+
+func (c *Client) Depth(symbol, limit string) (base.WsData, error) {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+	if len(limit) > 0 {
+		params["limit"] = limit
+	}
+
+	params["type"] = "step0"
+
+	uri := constants.SpotMarket + "/depth"
+
+	resp, err := c.DoGet(uri, params)
+	if err != nil {
+		return base.WsData{}, err
+	}
+	var result struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+		Data struct {
+			Asks      [][]string `json:"asks"`
+			Bids      [][]string `json:"bids"`
+			Timestamp string     `json:"timestamp"`
+		} `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return base.WsData{}, fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return base.WsData{}, err
+	}
+	err = json.Unmarshal(data, &result)
+	var depth base.WsData
+	t, _ := strconv.Atoi(result.Data.Timestamp)
+	depth.Time = int64(t)
+	var ask, bid []base.PriceLevel
+	for _, a := range result.Data.Asks {
+		ask = append(ask, base.PriceLevel{
+			Price:    a[0],
+			Quantity: a[1],
+		})
+	}
+	for _, b := range result.Data.Bids {
+		bid = append(bid, base.PriceLevel{
+			Price:    b[0],
+			Quantity: b[1],
+		})
+	}
+	depth.Asks = ask
+	depth.Bids = bid
+	return depth, err
+}
+
+func (c *Client) GetOrder(symbol, id string) (base.OrderInfo, error) {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+	params["orderId"] = id
+	uri := constants.SpotTrade + "/orderInfo"
+	resp, err := c.DoPost(uri, params)
+	if err != nil {
+		return base.OrderInfo{}, err
+	}
+	var result struct {
+		Code        string `json:"code"`
+		Msg         string `json:"msg"`
+		RequestTime int64  `json:"requestTime"`
+		Data        []struct {
+			AccountId        string `json:"accountId"`
+			Symbol           string `json:"symbol"`
+			OrderId          string `json:"orderId"`
+			ClientOrderId    string `json:"clientOrderId"`
+			Price            string `json:"price"`
+			Quantity         string `json:"quantity"`
+			OrderType        string `json:"orderType"`
+			Side             string `json:"side"`
+			Status           string `json:"status"`
+			FillPrice        string `json:"fillPrice"`
+			FillQuantity     string `json:"fillQuantity"`
+			FillTotalAmount  string `json:"fillTotalAmount"`
+			EnterPointSource string `json:"enterPointSource"`
+			FeeDetail        string `json:"feeDetail"`
+			OrderSource      string `json:"orderSource"`
+			CTime            string `json:"cTime"`
+		} `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return base.OrderInfo{}, fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return base.OrderInfo{}, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	var typ, status, side string
+	if err != nil {
+		return base.OrderInfo{}, err
+	}
+	t, _ := strconv.Atoi(result.Data[0].CTime)
+	if result.Data[0].OrderType == "limit" {
+		typ = base.LIMIT
+	} else if result.Data[0].OrderType == "market" {
+		typ = base.MARKET
+	}
+	if result.Data[0].Side == "buy" {
+		side = base.BID
+	} else if result.Data[0].Side == "sell" {
+		side = base.ASK
+	}
+	if result.Data[0].Status == "new" {
+		status = base.OPEN
+	} else if result.Data[0].Status == "partial_fill" {
+		status = base.PARTIALLY
+	} else if result.Data[0].Status == "full_fill" {
+		status = base.FILLED
+	} else if result.Data[0].Status == "cancelled" {
+		status = base.CANCELED
+	}
+	info := base.OrderInfo{
+		OrderID:  result.Data[0].OrderId,
+		Symbol:   symbol,
+		Side:     side,
+		Price:    result.Data[0].Price,
+		Quantity: result.Data[0].Quantity,
+		Type:     typ,
+		Filled:   result.Data[0].FillQuantity,
+		USDT:     result.Data[0].FillTotalAmount,
+		Status:   status,
+		Time:     int64(t),
+	}
+	return info, err
+
+}
