@@ -49,8 +49,8 @@ async def query_strategy_info(query_subject: str) -> str:
 @mcp_app.tool()
 async def evaluate_strategy(strategy: str) -> Dict[str, Any]:
     """
-    **在调用此函数之前，必须先调用过get_strategy_templates函数**
     评估用户提供的交易策略
+    **在调用此函数之前，必须先调用过get_strategy_templates函数**
     Args:
         strategy (str): 用户提供的策略描述
     Returns:
@@ -94,11 +94,11 @@ async def get_strategy_templates() -> str:
 @mcp_app.tool()
 async def format_strategy_to_json() -> str:
     """
-    **在调用此函数之前，必须先调用过get_strategy_templates函数**
     将用户输入的交易策略格式化为标准JSON格式
     * 此函数用于将用户提供的非结构化策略描述转换为标准JSON格式
     * 转换后的JSON必须符合get_strategy_templates中定义的模板格式
     * 如果某些必要参数缺失，将返回null值
+    * **在调用此函数之前，必须先调用过get_strategy_templates函数**
     Returns:
         str: 格式化策略的提示词
     """
@@ -112,6 +112,7 @@ async def format_strategy_to_json() -> str:
     4. 时间周期必须是标准的时间周期（如：1m, 5m, 15m, 1h, 4h, 1d）
     5. 入场和出场条件必须具体且可执行
     6. 如果是合约策略，杠杆倍数必须是整数
+    7. 如果用户没有明确表示不设置止损或者止盈，则将止损或止盈设置为null
     
     特殊处理规则：
     1. 如果用户明确表示不设置止损：

@@ -18,7 +18,14 @@
 /graphrag/ragtest/cache
 /graphrag/ragtest/logs
 /graphrag/ragtest/output
-
+/graphrag-api/ragtest/.env
+/graphrag-api/ragtest/cache
+/graphrag-api/ragtest/input
+/graphrag-api/ragtest/logs
+/graphrag-api/ragtest/output
+/graphrag-api/ragtest/prompts
+/graphrag-api/__pycache__
+/GraphRAG-Visualization-Tutorial/.env.sample
 # Binaries for programs and plugins
 *.exe
 *.exe~
