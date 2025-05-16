@@ -2,10 +2,14 @@ package mcpclient
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/FuradWho/Mix-MCP/pkg/config"
+	"github.com/FuradWho/Mix-MCP/pkg/schema"
 	mcp "github.com/metoro-io/mcp-golang"
 	"github.com/metoro-io/mcp-golang/transport/stdio"
 	"io"
+	"log"
 	"os/exec"
 )
 
@@ -54,6 +58,12 @@ func (server *StdioServer) Register() error {
 		return err
 	}
 	for _, t := range tools.Tools {
+		var toolDescription string
+		if t.Description == nil {
+			toolDescription = ""
+		} else {
+			toolDescription = *t.Description
+		}
 		clientsMap[t.Name] = Tool{
 			BelongClient: &Client{
 				TransportType:  1,
@@ -61,7 +71,7 @@ func (server *StdioServer) Register() error {
 				ClientInstance: client,
 			},
 			Name:        t.Name,
-			Description: *t.Description,
+			Description: toolDescription,
 			InputSchema: t.InputSchema,
 		}
 	}
@@ -86,11 +96,46 @@ type Tool struct {
 	InputSchema  interface{}
 }
 
-type ClientConfig struct {
+func InitAllClients(servers []config.McpServerConfig) {
+	var err error
+	clientsMap = make(map[string]Tool, len(servers))
+	for _, s := range servers {
+		if s.Type == "stdio" {
+			server := &StdioServer{
+				CommandName: s.Command,
+				CommandArgs: s.Args,
+				Env:         s.Env,
+			}
+			err = server.Register()
+			if err != nil {
+				log.Println(err.Error())
+			}
+		}
+	}
 }
 
-func initAllClients(clients []ClientConfig) {
-	//for _, v := range clients {
-	//	v.Init()
-	//}
+func toolTextResponse(text string) *mcp.ToolResponse {
+	return mcp.NewToolResponse(mcp.NewTextContent(text))
+}
+
+func RegisterForServer() (*mcp.Server, error) {
+	var err error
+	server := mcp.NewServer(stdio.NewStdioServerTransport())
+	for name, v := range clientsMap {
+		fmt.Println(v.Name)
+
+		fmt.Println(v.InputSchema.(map[string]interface{})["properties"])
+		bytes, _ := json.Marshal(v.InputSchema)
+		fmt.Println(string(bytes))
+		fmt.Println(schema.ParseSchema(string(bytes)))
+		//t := reflect.TypeOf(v.InputSchema)
+		//jsonschema.Reflect(v.InputSchema)
+
+		handler := func(arguments struct {
+		}) (*mcp.ToolResponse, error) {
+			return v.BelongClient.ClientInstance.CallTool(context.Background(), name, arguments)
+		}
+		err = server.RegisterTool(name, v.Description, handler)
+	}
+	return server, err
 }
