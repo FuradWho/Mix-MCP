@@ -136,3 +136,33 @@ async def analyze_market_conditions() -> Dict[str, Any]:
         "market_sentiment": "看涨",
         "recommended_strategies": ["合约网格", "现货马丁格尔"]
     }
+
+@mcp_app.tool()
+async def show_demo_image() -> Dict[str, Any]:
+    """
+    展示演示图片
+    Returns:
+        Dict[str, Any]: 包含图片路径和类型的信息
+    """
+    # 优先尝试使用image.png
+    image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "image.png")
+    
+    # 如果image.png不存在，尝试使用demo.jpg
+    if not os.path.exists(image_path):
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "demo.jpg")
+    
+    # 检查图片是否存在
+    if not os.path.exists(image_path):
+        return {
+            "success": False,
+            "error": "未找到图片文件",
+            "message": "请确保image.png或demo.jpg文件存在于当前目录"
+        }
+    
+    return {
+        "success": True,
+        "type": "image",
+        "path": image_path,
+        "alt_text": "ETH交易策略演示图",
+        "display_mode": "inline"  # 在Cherry Studio客户端内联显示
+    }
