@@ -408,3 +408,98 @@ func (c *Client) GetOrder(symbol, id string) (base.OrderInfo, error) {
 	return info, err
 
 }
+
+func (c *Client) LimitOrder(symbol, side, price, size string) (string, error) {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+	params["orderType"] = "limit"
+	params["force"] = "normal"
+	if side == base.BID {
+		params["side"] = "buy"
+	} else if side == base.ASK {
+		params["side"] = "sell"
+	}
+
+	params["quantity"] = size
+	params["price"] = price
+	uri := constants.SpotTrade + "/orders"
+	resp, err := c.DoPost(uri, params)
+	if err != nil {
+		return "", err
+	}
+	var result struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+		Data struct {
+			OrderId       string `json:"orderId"`
+			ClientOrderId string `json:"clientOrderId"`
+		} `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return "", fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	//fmt.Println(string(data))
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return "", err
+	}
+	return result.Data.OrderId, err
+}
+
+func (c *Client) MakerOrder(symbol, side, price, size string) (string, error) {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+	params["orderType"] = "limit"
+	params["force"] = "post_only"
+	if side == base.BID {
+		params["side"] = "buy"
+	} else if side == base.ASK {
+		params["side"] = "sell"
+	}
+	params["quantity"] = size
+	params["price"] = price
+	uri := constants.SpotTrade + "/orders"
+	resp, err := c.DoPost(uri, params)
+	if err != nil {
+		return "", err
+	}
+	var result struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+		Data struct {
+			OrderId       string `json:"orderId"`
+			ClientOrderId string `json:"clientOrderId"`
+		} `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return "", fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	//fmt.Println(string(data))
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return "", err
+	}
+	return result.Data.OrderId, err
+}
