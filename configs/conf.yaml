@@ -1,0 +1,13 @@
+Client:
+  EVM:
+    cmd:
+    env:
+
+  bitget:
+    cmd:
+    env:
+
+
+    读取配置文件 map[string]struct
+    注册：init ——》 返回初始化文档 =〉map[client-func]回调
+
