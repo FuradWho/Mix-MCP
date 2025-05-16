@@ -1,122 +1,136 @@
 package schema
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"reflect"
 	"strings"
 	"unicode"
 )
 
-// -------- 数据结构 --------
-type Field struct {
+const rawSchema = `{
+  "$Schema":"http://json-Schema.org/draft-07/Schema#",
+  "additionalProperties":false,
+  "properties":{
+    "address":{
+      "description":"The Ethereum address to query",
+      "type":"string"
+    },
+    "chainId":{
+      "description":"Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+      "type":"number"
+    },
+    "provider":{
+      "description":"Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value.",
+      "type":"string"
+    }
+  },
+  "required":["address"],
+  "type":"object"
+}`
+
+// ---------------------------------------------------------------------
+// 解析 JSON-Schema（只关心 properties / required）
+type prop struct {
+	Type        string `json:"type"`
 	Description string `json:"description"`
-	Type        string `json:"type,omitempty"`
-	Pattern     string `json:"pattern,omitempty"`
-	Items       *Field `json:"items,omitempty"`
+}
+type Schema struct {
+	Properties map[string]prop `json:"properties"`
+	Required   []string        `json:"required"`
 }
 
-type Schema = map[string]Field
+// ---------------------------------------------------------------------
+// 主流程
+func main() {
+	// 1. 反序列化 Schema
+	var sc Schema
+	if err := json.Unmarshal([]byte(rawSchema), &sc); err != nil {
+		log.Fatalf("decode Schema: %v", err)
+	}
 
-// -------- 解析入口 --------
-func ParseSchema(raw string) (Schema, error) {
-	raw = strings.TrimSpace(raw)
-	if !strings.HasPrefix(raw, "map[") {
-		return nil, fmt.Errorf("input must start with 'map['")
-	}
-	idx := 0
-	node, err := parseMap(raw, &idx)
-	if err != nil {
-		return nil, err
-	}
-	// 将通用 map[string]any 转为 Schema
-	return toSchema(node), nil
+	// 2. 构造结构体类型
+	t := BuildStructType(sc)
+
+	fmt.Println(t)
 }
 
-// -------- 递归解析 --------
-func parseMap(s string, i *int) (map[string]any, error) {
-	expect(s, i, "map[")
-	out := make(map[string]any)
-	for {
-		skipSpaces(s, i)
-		if peek(s, *i) == ']' { // 结束
-			*i++
-			return out, nil
+// ---------------------------------------------------------------------
+// 根据 Schema 生成 reflect.Type（匿名结构体）
+func BuildStructType(sc Schema) reflect.Type {
+	required := make(map[string]bool, len(sc.Required))
+	for _, r := range sc.Required {
+		required[r] = true
+	}
+
+	var fields []reflect.StructField
+	for jsonKey, p := range sc.Properties {
+		fields = append(fields, reflect.StructField{
+			Name: export(jsonKey), // 导出名，CamelCase
+			Type: js2go(p.Type),   // Go 类型
+			Tag:  makeTag(jsonKey, p.Description, required[jsonKey]),
+		})
+	}
+	return reflect.StructOf(fields)
+}
+
+// ---------------------------------------------------------------------
+// tag 生成：json + jsonschema
+func makeTag(jsonKey, desc string, isReq bool) reflect.StructTag {
+	// json:"name[,omitempty]"
+	jTag := jsonKey
+	if !isReq {
+		jTag += ",omitempty"
+	}
+
+	// jsonschema:"required,description=..." 或 "description=..."
+	var sb strings.Builder
+	if isReq {
+		sb.WriteString("required,")
+	}
+	sb.WriteString("description=")
+	sb.WriteString(escapeQuotes(desc))
+
+	tag := fmt.Sprintf(`json:"%s" jsonschema:"%s"`, jTag, sb.String())
+	return reflect.StructTag(tag)
+}
+
+func escapeQuotes(s string) string {
+	return strings.ReplaceAll(s, `"`, "'")
+}
+
+// ---------------------------------------------------------------------
+// 工具函数
+func js2go(t string) reflect.Type {
+	switch t {
+	case "string":
+		return reflect.TypeOf("")
+	case "number":
+		return reflect.TypeOf(float64(0))
+	case "integer":
+		return reflect.TypeOf(int64(0))
+	case "boolean":
+		return reflect.TypeOf(true)
+	default:
+		return reflect.TypeOf(new(interface{})).Elem()
+	}
+}
+
+func export(s string) string { // snake/kebab-case → CamelCase
+	var out []rune
+	up := true
+	for _, r := range s {
+		if r == '_' || r == '-' {
+			up = true
+			continue
 		}
-
-		key := readToken(s, i)
-		expectRune(s, i, ':')
-		val, err := parseValue(s, i)
-		if err != nil {
-			return nil, err
-		}
-		out[key] = val
-	}
-}
-
-func parseValue(s string, i *int) (any, error) {
-	if strings.HasPrefix(s[*i:], "map[") {
-		return parseMap(s, i)
-	}
-	// 原子字符串，一直读到空格或 ']'
-	return readToken(s, i), nil
-}
-
-// --------— util --------
-func readToken(s string, i *int) string {
-	start := *i
-	for *i < len(s) && !unicode.IsSpace(rune(s[*i])) && s[*i] != ']' {
-		*i++
-	}
-	return s[start:*i]
-}
-
-func expect(s string, i *int, lit string) {
-	if !strings.HasPrefix(s[*i:], lit) {
-		panic("syntax error")
-	}
-	*i += len(lit)
-}
-
-func expectRune(s string, i *int, r byte) {
-	if peek(s, *i) != r {
-		panic("syntax error")
-	}
-	*i++
-}
-
-func skipSpaces(s string, i *int) {
-	for *i < len(s) && unicode.IsSpace(rune(s[*i])) {
-		*i++
-	}
-}
-
-func peek(s string, i int) byte { return s[i] }
-
-// -------- map[string]any → Field 递归收敛 --------
-func toSchema(m map[string]any) Schema {
-	out := make(Schema, len(m))
-	for k, v := range m {
-		out[k] = toField(v.(map[string]any))
-	}
-	return out
-}
-
-func toField(m map[string]any) Field {
-	f := Field{}
-	for k, v := range m {
-		switch k {
-		case "description":
-			f.Description = v.(string)
-		case "type":
-			f.Type = v.(string)
-		case "pattern":
-			f.Pattern = v.(string)
-		case "items":
-			f.Items = ptr(toField(v.(map[string]any)))
-		default: // 继续向下递归，允许更深层级
-			// 可按需扩展
+		if up {
+			out = append(out, unicode.ToUpper(r))
+			up = false
+		} else {
+			out = append(out, r)
 		}
 	}
-	return f
+	return string(out)
 }
-
-func ptr[T any](v T) *T { return &v }
