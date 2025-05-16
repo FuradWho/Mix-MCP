@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/FuradWho/Mix-MCP/internal/store"
 	"github.com/FuradWho/Mix-MCP/pkg/base"
 	"github.com/yasseldg/bitget/config"
 	"io"
@@ -27,14 +28,16 @@ type Client struct {
 	signer    *Signer
 }
 
-func (c *Client) New(params []byte) error {
+var _ store.ExchangeStore = (*Client)(nil)
+
+func New(params []byte) (c *Client, err error) {
 	c.client = &http.Client{
 		Timeout: time.Duration(30) * time.Second,
 	}
 
 	sj, err := simplejson.NewJson(params)
 	if err != nil {
-		return err
+		return c, err
 	}
 
 	// set init params
@@ -44,7 +47,7 @@ func (c *Client) New(params []byte) error {
 	c.password = sj.Get("password").MustString()
 	c.signer = new(Signer).Init(c.secretKey)
 
-	return nil
+	return c, nil
 }
 
 func (c *Client) NewWithParams(baseUrl, accessKey, secretKey, password string) error {
@@ -157,6 +160,52 @@ func (c *Client) DoPost(uri string, params map[string]string) (*http.Response, e
 	}
 
 	return response, err
+}
+
+func (c *Client) GetAccountBalance(currency string) ([]string, error) {
+	params := NewParams()
+	if len(currency) > 0 {
+		params["coin"] = currency
+	}
+	uri := constants.SpotAccount + "/assets-lite"
+
+	resp, err := c.DoGet(uri, params)
+	var balance struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+		Data    []struct {
+			CoinId    int64  `json:"coinId"`
+			CoinName  string `json:"coinName"`
+			Available string `json:"available"`
+			Frozen    string `json:"frozen"`
+			Lock      string `json:"lock"`
+			UTime     string `json:"uTime"`
+		} `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return []string{"0", "0", "0"}, fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return []string{"0", "0", "0"}, err
+	}
+
+	err = json.Unmarshal(data, &balance)
+	if err != nil {
+		return []string{"0", "0", "0"}, err
+	}
+	var balanceList []string
+	if balance.Code == "00000" {
+		a, _ := strconv.ParseFloat(balance.Data[0].Available, 64)
+		l, _ := strconv.ParseFloat(balance.Data[0].Frozen, 64)
+		t := strconv.FormatFloat(a+l, 'f', 4, 64)
+		return append(balanceList, balance.Data[0].Available, balance.Data[0].Frozen, t), nil
+	}
+	return []string{"0", "0", "0"}, nil
 }
 
 func (c *Client) MarketOrder(symbol, side, size string) (string, error) {
