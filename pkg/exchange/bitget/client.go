@@ -503,3 +503,123 @@ func (c *Client) MakerOrder(symbol, side, price, size string) (string, error) {
 	}
 	return result.Data.OrderId, err
 }
+
+func (c *Client) TakerOrder(symbol, side, price, size string) (string, error) {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+	params["orderType"] = "limit"
+	params["force"] = "ioc"
+	if side == base.BID {
+		params["side"] = "buy"
+	} else if side == base.ASK {
+		params["side"] = "sell"
+	}
+
+	params["quantity"] = size
+	params["price"] = price
+	uri := constants.SpotTrade + "/orders"
+	resp, err := c.DoPost(uri, params)
+	if err != nil {
+		return "", err
+	}
+	var result struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+		Data struct {
+			OrderId       string `json:"orderId"`
+			ClientOrderId string `json:"clientOrderId"`
+		} `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return "", fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	//fmt.Println(string(data))
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return "", err
+
+	}
+	return result.Data.OrderId, err
+}
+
+func (c *Client) CancelOrder(symbol, id string) (bool, error) {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+	params["orderId"] = id
+	uri := constants.SpotTrade + "/cancel-order"
+	resp, err := c.DoPost(uri, params)
+	if err != nil {
+		return false, err
+	}
+	var result struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+		Data    string `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return false, fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	if err != nil && result.Message == "success" {
+		return false, err
+	}
+	return true, err
+}
+
+func (c *Client) CancelOrders(symbol string) error {
+	params := NewParams()
+	params["symbol"] = symbol + "_SPBL"
+
+	uri := constants.SpotTrade + "/cancel-symbol-order"
+	resp, err := c.DoPost(uri, params)
+	if err != nil {
+		return err
+	}
+	var result struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+		Data    string `json:"data"`
+	}
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(data)
+		return err
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(data, &result)
+	if err != nil && result.Message == "success" {
+		return err
+	}
+	return nil
+}
