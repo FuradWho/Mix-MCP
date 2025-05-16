@@ -7,9 +7,9 @@
 #
 
 # Custom
-/_output
-/tmp
-/configs
+/_output/*
+/tmp/*
+/configs/*
 
 # Binaries for programs and plugins
 *.exe

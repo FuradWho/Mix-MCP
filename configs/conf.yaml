@@ -5,7 +5,7 @@ Client:
 
   bitget:
     cmd:
-    env:1111
+    env:11222
 
 
     读取配置文件 map[string]struct
