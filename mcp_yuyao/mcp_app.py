@@ -4,10 +4,47 @@ from fastmcp import FastMCP
 import re
 from typing import List, Dict, Any
 import json
+import subprocess
 from strategy import get_strategy_template, STRATEGY_TEMPLATES, get_all_strategy_templates
 
 # 创建 MCP 服务
 mcp_app = FastMCP("ETHTradingExpert", sse_path="/mcp/sse", message_path="/mcp/messages/")
+
+@mcp_app.tool()
+async def query_strategy_info(query_subject: str) -> str:
+    """
+    查询关于特定主题的信息
+    Args:
+        query_subject (str): 用户查询的问题主语，可以是任何加密货币相关的主题或概念
+    Returns:
+        str: 查询结果信息
+    """
+  
+    # 构建查询命令，先激活conda环境，切换目录，再执行主命令
+    query = f"{query_subject}是什么"
+    
+    # 构建完整命令：激活conda环境 -> 切换目录 -> 执行查询
+    cmd = f"source ~/miniconda3/etc/profile.d/conda.sh && conda activate ml && cd /Users/yuyaoge/Project/Mix-MCP/graphrag && graphrag query --root ./ragtest --method local --query \"{query}\""
+    
+    try:
+        # 使用subprocess.run确保等待命令执行完成，使用bash确保conda命令可以执行
+        process = subprocess.run(cmd, shell=True, text=True, capture_output=True, check=True, executable='/bin/bash')
+        
+        # 获取命令的输出
+        result = process.stdout.strip()
+        
+        # 如果有内容返回，添加前缀
+        if result:
+            return f"你是一个加密货币交易专家，熟知各种交易策略。\n{result}"
+        else:
+            return "你是一个加密货币交易专家，熟知各种交易策略。"
+            
+    except subprocess.CalledProcessError as e:
+        # 命令执行出错
+        return "你是一个加密货币交易专家，熟知各种交易策略。"
+    except Exception as e:
+        # 其他异常
+        return "你是一个加密货币交易专家，熟知各种交易策略。"
 
 @mcp_app.tool()
 async def evaluate_strategy(strategy: str) -> Dict[str, Any]:
