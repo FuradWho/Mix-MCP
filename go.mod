@@ -4,6 +4,7 @@ go 1.23.8
 
 require (
 	github.com/bitly/go-simplejson v0.5.1
+	github.com/invopop/jsonschema v0.12.0
 	github.com/metoro-io/mcp-golang v0.12.0
 	github.com/yasseldg/bitget v1.0.12
 )
@@ -11,7 +12,6 @@ require (
 require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
-	github.com/invopop/jsonschema v0.12.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect

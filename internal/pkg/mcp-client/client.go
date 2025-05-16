@@ -2,12 +2,11 @@ package mcpclient
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/FuradWho/Mix-MCP/pkg/config"
-	"github.com/FuradWho/Mix-MCP/pkg/schema"
-	mcp "github.com/metoro-io/mcp-golang"
-	"github.com/metoro-io/mcp-golang/transport/stdio"
+	mcp "github.com/FuradWho/Mix-MCP/pkg/mcp-golang"
+	"github.com/FuradWho/Mix-MCP/pkg/mcp-golang/transport/stdio"
+	"github.com/invopop/jsonschema"
 	"io"
 	"log"
 	"os/exec"
@@ -61,6 +60,7 @@ func (server *StdioServer) Register() error {
 		var toolDescription string
 		if t.Description == nil {
 			toolDescription = ""
+			continue
 		} else {
 			toolDescription = *t.Description
 		}
@@ -122,20 +122,11 @@ func RegisterForServer() (*mcp.Server, error) {
 	var err error
 	server := mcp.NewServer(stdio.NewStdioServerTransport())
 	for name, v := range clientsMap {
-		fmt.Println(v.Name)
-
-		fmt.Println(v.InputSchema.(map[string]interface{})["properties"])
-		bytes, _ := json.Marshal(v.InputSchema)
-		fmt.Println(string(bytes))
-		fmt.Println(schema.ParseSchema(string(bytes)))
-		//t := reflect.TypeOf(v.InputSchema)
-		//jsonschema.Reflect(v.InputSchema)
-
-		handler := func(arguments struct {
-		}) (*mcp.ToolResponse, error) {
+		handler := func(arguments any) (*mcp.ToolResponse, error) {
 			return v.BelongClient.ClientInstance.CallTool(context.Background(), name, arguments)
 		}
-		err = server.RegisterTool(name, v.Description, handler)
+		log.Println(v.Name, v.Description)
+		err = server.RegisterToolWithInputSchema(name, v.Description, handler, jsonschema.Reflect(v.InputSchema))
 	}
 	return server, err
 }
