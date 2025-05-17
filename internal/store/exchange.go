@@ -40,4 +40,5 @@ type ExchangeStore interface {
 	GetOrder(symbol, id string) (base.OrderInfo, error)
 	GetMarketPrice(symbol string) (string, error)
 	Depth(symbol, limit string) (base.WsData, error)
+	GetHistoryCandles(symbol string, granularity string, endTime string) ([][]string, error)
 }

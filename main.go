@@ -11,11 +11,11 @@ import (
 
 func main() {
 	fmt.Println("Hello World11")
-	conf, err := config.ReadConfig("/Users/furad/Projects/Mix-MCP/static/config.json")
+	conf, err := config.ReadConfig("/Users/xin/Projects/Mix-MCP/static/config.json")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	logFile, err := os.OpenFile("/Users/furad/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_APPEND, 0777)
+	logFile, err := os.OpenFile("/Users/xin/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -38,6 +38,14 @@ func main() {
 		log.Fatalln(err)
 	}
 	err = server.RegisterTool("Passive_Maker", "在实时中间价的上下固定价差同时挂买单和卖单，靠“吃差价”获利", mcpserver.MakerHandler)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = server.RegisterTool("get_history_candles", "获取指定币对历史K线数据", mcpserver.HistoryCandleHandler)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = server.RegisterTool("get_symbol_price", "获取指定币对当前价格", mcpserver.CurrentPriceHandler)
 	if err != nil {
 		log.Fatalln(err)
 	}
