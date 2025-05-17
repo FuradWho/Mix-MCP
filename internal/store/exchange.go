@@ -9,14 +9,16 @@ type IStore interface {
 	Bitget() ExchangeStore
 }
 
-type store struct {
+type Store struct {
 }
 
-func NewStore() *store {
-	return &store{}
+func NewStore() *Store {
+	return &Store{}
 }
 
-func (s *store) Bitget(params []byte) ExchangeStore {
+var _ ExchangeStore = (*bitget.Client)(nil)
+
+func (s *Store) Bitget(params []byte) ExchangeStore {
 	client, err := bitget.New(params)
 	if err != nil {
 		return nil

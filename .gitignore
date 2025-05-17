@@ -10,9 +10,11 @@
 /_output/*
 /tmp/*
 /configs/*
+
+# yuyao
 /mcp_yuyao/__pycache__
 /mcp_yuyao/.venv
-/graphrag/ragtest/.env
+
 /pkg/mcp-golang
 
 # Binaries for programs and plugins
