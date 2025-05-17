@@ -22,8 +22,6 @@ async def analyze_trading_strategy(market_data: str, strategy_json: str) -> str:
     Returns:
         str: 详细的策略分析结果
     """
-    # 首先获取策略模板，确保策略分析基于标准模板
-    templates = await get_strategy_templates()
     
     try:
         # 解析策略JSON，但不再严格校验格式
