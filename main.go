@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	mcpclient "github.com/FuradWho/Mix-MCP/internal/pkg/mcp-client"
+	mcpserver "github.com/FuradWho/Mix-MCP/internal/pkg/mcp-server"
 	"github.com/FuradWho/Mix-MCP/pkg/config"
 	"log"
 )
@@ -15,6 +16,10 @@ func main() {
 	}
 	mcpclient.InitAllClients(conf.McpServers)
 	server, err := mcpclient.RegisterForServer()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = server.RegisterTool("grid_strategy", "grid strategy", mcpserver.GridHandler)
 	if err != nil {
 		log.Fatalln(err)
 	}

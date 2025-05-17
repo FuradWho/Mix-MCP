@@ -8,5 +8,6 @@ type McpServerConfig struct {
 }
 
 type Config struct {
-	McpServers []McpServerConfig `json:"mcp-servers"`
+	McpServers []McpServerConfig            `json:"mcp-servers"`
+	Exchanges  map[string]map[string]string `json:"exchanges"`
 }
