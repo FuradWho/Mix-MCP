@@ -25,7 +25,19 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = server.RegisterTool("grid_strategy", "grid strategy", mcpserver.GridHandler)
+	err = server.RegisterTool("grid_strategy", "在设定区间内划等距价格网格，价格下跌逐级买入、上涨逐级卖出，通过来回摆动赚取区间波动", mcpserver.GridHandler)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = server.RegisterTool("cancel_strategy", "cancel strategy", mcpserver.CancelStrategy)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = server.RegisterTool("dca_strategy", "按固定时间间隔用同等法币金额市价买入，摊平成本、避免择时。", mcpserver.DCAHandler)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = server.RegisterTool("Passive_Maker", "在实时中间价的上下固定价差同时挂买单和卖单，靠“吃差价”获利", mcpserver.MakerHandler)
 	if err != nil {
 		log.Fatalln(err)
 	}
