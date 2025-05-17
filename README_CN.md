@@ -1,5 +1,12 @@
 # Mix-MCP
 
+<div align="center" style="font-size: 1.5em;">
+  <p><strong><a href="README.md">English</a>, <a href="README_CN.md">中文</a></strong></p>
+
+  <p><strong><a href="">GitBook</a></strong></p>
+
+</div>
+
 🌐 Mix-MCP 是一个创新平台，通过利用 Anthropic 于 🗓️ 2024 年 12 月推出的 Model Context Protocol (MCP)，在 Web3 世界与大型语言模型 (LLMs) 之间架起桥梁。我们的项目旨在提供一个开放平台，让任何 Web3 技术、应用或工具都能与大型语言模型交互。🤖 任何 AI+Web3 项目都可以使用我们的工具轻松对接大模型！
 
 🔍 以 ETH 交易场景为例，您可以与 AI 助手对话，让它获取实时 📊 K 线数据和专家分析，解析市场指标，生成市场评估报告，预测 ETH 走势，构建交易策略，将实时市场评估整合到策略中，并智能发起或终止交易 📈📉。这一用户场景包含三大核心组件：
