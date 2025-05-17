@@ -5,16 +5,20 @@ import (
 	"fmt"
 )
 
-var StrategyMap = make(map[string]context.Context)
+var StrategyMap = make(map[string]context.CancelFunc)
 
-func PushStrategyCtx(name string, ctx context.Context) error {
+func PushStrategyCtx(name string, cancelFunc context.CancelFunc) error {
 	if _, ok := StrategyMap[name]; ok {
 		return fmt.Errorf("%s already exists", name)
 	}
-	StrategyMap[name] = ctx
+	StrategyMap[name] = cancelFunc
 	return nil
 }
 
 func PopStrategyCtx(name string) {
+
+	if cancelFunc, ok := StrategyMap[name]; ok {
+		cancelFunc()
+	}
 	delete(StrategyMap, name)
 }
