@@ -358,7 +358,7 @@ def predict_main(prediction_minutes=60):
     返回:
         dict: 包含每个时间框架预测结果的字典
     """
-    model_path = r'./mcp_ai_predict/eth_predict/models/random_forest_model_20250517_065557.pkl'
+    model_path = r'./eth_predict/models/random_forest_model_20250517_065557.pkl'
     
     # 创建自定义的时间周期字典
     time_period = {'unit': 'minutes', 'value': prediction_minutes}

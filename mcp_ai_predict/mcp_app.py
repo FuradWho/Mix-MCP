@@ -590,7 +590,7 @@ async def ai_predict_visualization() -> str:
     await asyncio.sleep(3)
 
     # 图像相对路径
-    visualization_path = 'http://img.geyuyao.com/i/u/2025/05/17/future_prediction.png'
+    visualization_path = 'https://img.geyuyao.com/i/u/2025/05/17/future_prediction_1.png'
 
     # 返回HTML格式的图片引用，设置宽度为100%
     html_response = f"""

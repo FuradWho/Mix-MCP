@@ -169,3 +169,6 @@ fabric.properties
 
 .DS_Store
 mcp_ai_predict/eth_predict/models/random_forest_model_20250517_065557.pkl
+mcp_ai_predict/eth_predict/saved_models/logs/
+# mcp_ai_predict/eth_predict/data/logs/
+mcp_ai_predict/eth_predict/data/
