@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	logFile, err := os.OpenFile("/Users/xin/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_APPEND, 0777)
+	logFile, err := os.OpenFile("/Users/furad/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

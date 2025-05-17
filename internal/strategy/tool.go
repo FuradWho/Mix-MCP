@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 var StrategyMap = make(map[string]context.CancelFunc)
@@ -21,4 +22,40 @@ func PopStrategyCtx(name string) {
 		cancelFunc()
 	}
 	delete(StrategyMap, name)
+}
+
+func splitString(r rune) bool {
+	return r == '_' || r == '-'
+}
+
+// SplitStringChar 字符串按照多个字符分割
+func SplitStringChar(s string) []string {
+	a := strings.FieldsFunc(s, splitString)
+	return a
+}
+
+func FormatSymbol(exchange, symbol string) string {
+	symbols := SplitStringChar(symbol)
+	if len(symbols) == 0 {
+		return ""
+	}
+	if len(symbols) == 1 && strings.Contains(symbol, "USDT") {
+		tokens := strings.Split(symbol, "USDT")
+		symbols[0] = tokens[0]
+		symbols = append(symbols, "USDT")
+	} else {
+		return symbol
+	}
+
+	newSymbol := func(s string) string {
+		return symbols[0] + s + symbols[1]
+	}
+
+	switch exchange {
+	case "bitget":
+		return newSymbol("")
+	default:
+
+		return symbol
+	}
 }
