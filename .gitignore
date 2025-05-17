@@ -14,7 +14,8 @@
 # yuyao
 /mcp_yuyao/__pycache__
 /mcp_yuyao/.venv
-
+/mcp_yuyao/eth_predict/__pycache__
+/mcp_yuyao/eth_predict/saved_models
 /pkg/mcp-golang
 
 # Binaries for programs and plugins
@@ -166,3 +167,4 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/goland,go,linux
 
+.DS_Store
