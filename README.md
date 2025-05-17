@@ -1,5 +1,13 @@
-# MixMCP
-🌐 MixMCP is an innovative platform that bridges the gap between the Web3 World and Large Language Model (LLMs) by leveraging the Model Context Protocol (MCP), which was introduced by Anthropic in 🗓️ December 2024. Our project aims to provide an open platform for any Web3 technology, application, or tool to interact with large language models. 🤖 Any AI+Web3 project can easily interact with large models using our tools!
+# Mix-MCP
+
+<div align="center" style="font-size: 1.5em;">
+  <p><strong><a href="README.md">English</a>, <a href="README_CN.md">中文</a></strong></p>
+
+  <p><strong><a href="">GitBook</a></strong></p>
+
+</div>
+
+🌐 Mix-MCP is an innovative platform that bridges the gap between the Web3 World and Large Language Model (LLMs) by leveraging the Model Context Protocol (MCP), which was introduced by Anthropic in 🗓️ December 2024. Our project aims to provide an open platform for any Web3 technology, application, or tool to interact with large language models. 🤖 Any AI+Web3 project can easily interact with large models using our tools!
 
 🔍 Taking the ETH trading scenario as an example, you can engage in conversation with the AI assistant to have it fetch real-time 📊 candlestick data and expert analysis, analyze market indicators, generate market assessment reports, predict ETH trends, construct trading strategies, integrate real-time market assessments into trading strategies, and intelligently initiate or terminate trades📈📉. The user's description outlines three core components:
 ## Highlights
