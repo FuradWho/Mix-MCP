@@ -7,6 +7,13 @@ import json
 import subprocess
 from strategy import get_strategy_template, STRATEGY_TEMPLATES, get_all_strategy_templates
 from openai import OpenAI
+import sys
+import base64
+from pathlib import Path
+
+# # 添加路径以便导入eth_predict模块
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# from eth_predict.predict_eth import predict_main
 
 mcp_app = FastMCP("ETHTradingExpert", sse_path="/mcp/sse", message_path="/mcp/messages/")
 
@@ -477,3 +484,59 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
             
     except Exception as e:
         return {"error": f"分析过程中发生错误：{str(e)}"}
+
+@mcp_app.tool()
+async def ai_predict_visualization() -> str:
+    """
+    调用AI预测引擎预测ETH未来价格走势，并返回可视化结果
+    
+    Returns:
+        str: 包含预测结果图像的HTML标记
+    """
+
+
+    # 获取可视化图像路径
+    visualization_path = './eth_predict/visualizations/future_prediction.png'
+
+    # 读取图像并转换为base64
+    with open(visualization_path, "rb") as img_file:
+        img_data = base64.b64encode(img_file.read()).decode('utf-8')
+    
+    # 构建HTML响应，包含内嵌图像
+    html_response = f"""
+    <div style="text-align: center;">
+        <h2>ETH价格预测结果（未来60分钟）</h2>
+        <img src="data:image/png;base64,{img_data}" style="max-width:100%;" />
+        <p>预测生成时间: {Path(visualization_path).stat().st_mtime}</p>
+    </div>
+    """
+    
+    return html_response
+    # try:
+    #     # 调用predict_main函数进行预测
+    #     results = predict_main(prediction_minutes)
+        
+    #     # 获取可视化图像路径
+    #     visualization_path = './mcp_ai_predict/eth_predict/visualizations/future_prediction.png'
+    #     abs_path = os.path.abspath(visualization_path)
+        
+    #     # 检查图像是否存在
+    #     if not os.path.exists(visualization_path):
+    #         return f"预测成功，但未找到可视化图像文件: {visualization_path}"
+        
+    #     # 读取图像并转换为base64
+    #     with open(visualization_path, "rb") as img_file:
+    #         img_data = base64.b64encode(img_file.read()).decode('utf-8')
+        
+    #     # 构建HTML响应，包含内嵌图像
+    #     html_response = f"""
+    #     <div style="text-align: center;">
+    #         <h2>ETH价格预测结果（未来{prediction_minutes}分钟）</h2>
+    #         <img src="data:image/png;base64,{img_data}" style="max-width:100%;" />
+    #         <p>预测生成时间: {Path(visualization_path).stat().st_mtime}</p>
+    #     </div>
+    #     """
+        
+    #     return html_response
+    # except Exception as e:
+    #     return f"预测过程中发生错误: {str(e)}"
