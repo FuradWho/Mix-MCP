@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/FuradWho/Mix-MCP/internal/store"
 	"github.com/FuradWho/Mix-MCP/pkg/config"
 	"testing"
@@ -31,4 +32,8 @@ func TestGrid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestTool(t *testing.T) {
+	fmt.Println(FormatSymbol("bitget", "BTC-USDT"))
 }
