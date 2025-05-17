@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/FuradWho/Mix-MCP/internal/store"
 	"github.com/FuradWho/Mix-MCP/pkg/base"
 	"github.com/yasseldg/bitget/config"
 	"io"
@@ -27,8 +26,6 @@ type Client struct {
 	client    *http.Client
 	signer    *Signer
 }
-
-var _ store.ExchangeStore = (*Client)(nil)
 
 func New(params []byte) (c *Client, err error) {
 	c.client = &http.Client{

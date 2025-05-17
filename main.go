@@ -9,7 +9,7 @@ import (
 
 func main() {
 	fmt.Println("Hello World11")
-	conf, err := config.ReadConfig("/Users/xin/Projects/Mix-MCP/static/config.json")
+	conf, err := config.ReadConfig("/Users/furad/Projects/Mix-MCP/static/config.json")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

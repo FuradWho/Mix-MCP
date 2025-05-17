@@ -1,6 +1,6 @@
 {
   "mcp-servers": [
-    {"type": "stdio", "command": "node", "args": ["/Users/xin/Projects/mcp-ethers-server/build/src/index.js"],
+    {"type": "stdio", "command": "node", "args": ["/Users/furad/GolandProjects/mcp-ethers-server/build/src/index.js"],
       "env": ["ALCHEMY_API_KEY=0E8QxwUpMsNTGn1-itH3iN27c32pulM5"]
     }
   ]
