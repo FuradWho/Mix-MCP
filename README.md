@@ -43,7 +43,7 @@ MixMCP uses multiple MCP-compatible backend services. You can configure them in 
       "type": "stdio",
       "command": "node",
       "args": [
-        "/path/to//index.js"
+        "path/to/index.js"
       ],
       "env": []
     }
