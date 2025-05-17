@@ -18,8 +18,9 @@
 
   <p><strong><a href="https://ethbeijing.gitbook.io/mixmcp">GitBook</a></strong></p>
 
-  <p><strong><a href="https://youtu.be/wLVySOC8p2k">Demo</a></strong></p>
-
+<a href="https://www.youtube.com/watch?v=wLVySOC8p2k" style="display: inline-block; width: 45%; text-align: left; padding-left: 10px;">
+    <img src="https://img.shields.io/badge/Demo-YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="Youtube Demo" style="transform: scale(1.2);">
+  </a>
 </div>
 
 🌐 Mix-MCP is an innovative platform that bridges the gap between the Web3 World and Large Language Model (LLMs) by leveraging the Model Context Protocol (MCP), which was introduced by Anthropic in 🗓️ December 2024. Our project aims to provide an open platform for any Web3 technology, application, or tool to interact with large language models. 🤖 Any AI+Web3 project can easily interact with large models using our tools!
