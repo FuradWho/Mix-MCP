@@ -10,17 +10,17 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type BreakoutCfg struct {
-	Symbol   string
-	Size     string
-	Lookback int
-	Buffer   decimal.Decimal // 跳过点
-	TP       decimal.Decimal // 止盈 %
-	SL       decimal.Decimal // 止损 %
-	Tick     time.Duration
+type BreakoutArgs struct {
+	Symbol   string  `json:"symbol"   jsonschema:"required,description=交易对符号"`
+	Size     string  `json:"size"     jsonschema:"required,description=市价开仓数量"`
+	Lookback int     `json:"lookback" jsonschema:"required,description=回看 N 根 K 线的最高价"`
+	Buffer   float64 `json:"buffer"   jsonschema:"required,description=突破缓冲百分比"`
+	TP       float64 `json:"tp"       jsonschema:"required,description=止盈百分比"`
+	SL       float64 `json:"sl"       jsonschema:"required,description=止损百分比"`
+	Tick     int64   `json:"tick"     jsonschema:"description=轮询价格间隔（秒）"`
 }
 
-func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutCfg) error {
+func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutArgs) error {
 	var highs []decimal.Decimal
 
 	for {
@@ -52,7 +52,7 @@ func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutCfg) erro
 			}
 		}
 
-		trigger := maxHigh.Mul(decimal.NewFromInt(1).Add(cfg.Buffer))
+		trigger := maxHigh.Mul(decimal.NewFromInt(1).Add(decimal.NewFromFloat(cfg.Buffer)))
 		if p.GreaterThan(trigger) {
 			// 1. 追涨
 			orderID, err := ex.MarketOrder(cfg.Symbol, "buy", cfg.Size)
@@ -63,8 +63,8 @@ func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutCfg) erro
 			log.Println("breakout buy id", orderID)
 
 			entry := p
-			tp := entry.Mul(decimal.NewFromInt(1).Add(cfg.TP))
-			sl := entry.Mul(decimal.NewFromInt(1).Sub(cfg.SL))
+			tp := entry.Mul(decimal.NewFromInt(1).Add(decimal.NewFromFloat(cfg.TP)))
+			sl := entry.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(cfg.SL)))
 
 			// 2. 止盈/止损循环
 			for {
@@ -80,11 +80,11 @@ func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutCfg) erro
 					log.Println("exit at", px)
 					break
 				}
-				time.Sleep(cfg.Tick)
+				time.Sleep(time.Duration(cfg.Tick))
 			}
 			highs = nil // 重新统计
 		}
-		time.Sleep(cfg.Tick)
+		time.Sleep(time.Duration(cfg.Tick))
 	}
 }
 

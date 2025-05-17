@@ -9,14 +9,14 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type MakerCfg struct {
-	Symbol string
-	Size   string          // 每张委托数量
-	Spread decimal.Decimal // %，如 0.002 == 0.2%
-	Tick   time.Duration
+type MakerArgs struct {
+	Symbol string  `json:"symbol"  jsonschema:"required,description=交易对符号，例如 BTC-USDT"`
+	Size   string  `json:"size"    jsonschema:"required,description=单边挂单数量"`
+	Spread float64 `json:"spread"  jsonschema:"description=总价差百分比，如 0.002 表示 0.2%"`
+	Tick   int64   `json:"tick"    jsonschema:"description=刷新报价间隔（秒）"`
 }
 
-func PassiveMaker(ctx context.Context, ex store.ExchangeStore, cfg MakerCfg) error {
+func PassiveMaker(ctx context.Context, ex store.ExchangeStore, cfg MakerArgs) error {
 	var bidID, askID string
 	for {
 		select {
@@ -34,7 +34,7 @@ func PassiveMaker(ctx context.Context, ex store.ExchangeStore, cfg MakerCfg) err
 		mid, _ := decimal.NewFromString(priceStr)
 
 		// 2. 目标价
-		half := mid.Mul(cfg.Spread).Div(decimal.NewFromInt(2))
+		half := mid.Mul(decimal.NewFromFloat(cfg.Spread)).Div(decimal.NewFromInt(2))
 		bid := mid.Sub(half)
 		ask := mid.Add(half)
 
@@ -53,6 +53,6 @@ func PassiveMaker(ctx context.Context, ex store.ExchangeStore, cfg MakerCfg) err
 			log.Println("maker sell err:", err)
 		}
 
-		time.Sleep(cfg.Tick)
+		time.Sleep(time.Duration(cfg.Tick))
 	}
 }
