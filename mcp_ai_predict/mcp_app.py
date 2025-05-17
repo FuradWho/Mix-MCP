@@ -21,11 +21,11 @@ mcp_app = FastMCP("ETHTradingExpert", sse_path="/mcp/sse", message_path="/mcp/me
 @mcp_app.tool()
 async def analyze_trading_strategy(market_data: str, strategy_json: str) -> str:
     """
-    基于市场分析结果和用户交易策略进行深度分析评估，提供专业的策略评估报告
-    【重要】使用前请先调用 analyze_market_conditions 获取市场分析数据作为 market_data 参数，如果用户在之前已经调用过 analyze_market_conditions 函数，则不需要再次调用，直接使用上一次的市场分析报告作为 market_data 参数
+    基于市场分析报告和用户交易策略进行深度分析评估，提供专业的策略评估报告
+    【重要】使用前请先调用 analyze_market_conditions 获取市场分析报告作为 market_data 参数，如果用户在之前已经调用过 analyze_market_conditions 函数，则不需要再次调用，直接使用上一次生成的市场分析报告作为 market_data 参数
     
     Args:
-        market_data (str): 市场分析数据，是 analyze_market_conditions 函数的返回结果
+        market_data (str): 市场分析报告
         strategy_json (str): 用户的交易策略，JSON格式，通过 format_strategy_to_json 函数生成
     Returns:
         str: 详细的策略分析结果
