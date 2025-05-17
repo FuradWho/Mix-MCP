@@ -1,0 +1,4 @@
+2025-05-17 15:45:14,297 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 15:45:14,307 - FileManager - INFO - 已从 ./mcp_ai_predict/eth_predict/models/random_forest_model_20250517_065557.pkl 加载模型
+2025-05-17 15:45:14,307 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 15:45:14,694 - FileManager - INFO - 已从 ./mcp_ai_predict/eth_predict/data/raw_data/cache/ETH_USDT_2022_20250517_5m.csv 加载原始数据

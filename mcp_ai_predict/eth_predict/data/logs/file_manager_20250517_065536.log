@@ -1,0 +1,11 @@
+2025-05-17 06:55:36,777 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 06:55:37,116 - FileManager - INFO - 已从 ./data/raw_data/cache/ETH_USDT_2022_20250517_5m.csv 加载原始数据
+2025-05-17 06:55:41,850 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 06:55:43,265 - FileManager - INFO - 模型已保存至 ./saved_models/models/generic/svm_model_20250517_065543.pkl
+2025-05-17 06:55:58,006 - FileManager - INFO - 模型已保存至 ./saved_models/models/generic/random_forest_model_20250517_065557.pkl
+2025-05-17 06:56:25,816 - FileManager - INFO - 模型已保存至 ./saved_models/models/generic/mlp_model_20250517_065625.pkl
+2025-05-17 06:57:55,001 - FileManager - INFO - 模型已保存至 ./saved_models/models/generic/rnn_model_20250517_065754.pkl
+2025-05-17 06:58:42,106 - FileManager - INFO - 原始数据已保存至 ./saved_models/raw_data/generic/processed_eth_data.csv
+2025-05-17 06:58:42,107 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 06:58:42,108 - FileManager - INFO - 已从 ./saved_models/models/generic/svm_model_20250517_065543.pkl 加载模型
+2025-05-17 06:58:42,108 - FileManager - INFO - 文件管理器初始化完成

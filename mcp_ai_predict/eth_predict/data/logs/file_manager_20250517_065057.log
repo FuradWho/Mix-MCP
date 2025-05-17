@@ -1,0 +1,4 @@
+2025-05-17 06:50:57,991 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 06:50:58,326 - FileManager - INFO - 已从 ./data/raw_data/cache/ETH_USDT_2022_20250517_5m.csv 加载原始数据
+2025-05-17 06:51:03,022 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 06:51:04,495 - FileManager - INFO - 模型已保存至 ./saved_models/models/generic/svm_model_20250517_065104.pkl

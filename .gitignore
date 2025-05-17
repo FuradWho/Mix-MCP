@@ -12,10 +12,10 @@
 /configs/*
 
 # yuyao
-/mcp_yuyao/__pycache__
-/mcp_yuyao/.venv
-/mcp_yuyao/eth_predict/__pycache__
-/mcp_yuyao/eth_predict/saved_models
+/mcp_ai_predict/__pycache__
+/mcp_ai_predict/.venv
+/mcp_ai_predict/eth_predict/__pycache__
+/mcp_ai_predict/eth_predict/models
 /pkg/mcp-golang
 
 # Binaries for programs and plugins
@@ -168,3 +168,4 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/goland,go,linux
 
 .DS_Store
+mcp_ai_predict/eth_predict/models/random_forest_model_20250517_065557.pkl

@@ -1,0 +1,4 @@
+2025-05-17 15:42:33,733 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 15:42:33,733 - FileManager - ERROR - 加载模型失败: [Errno 2] No such file or directory: '/eth_predict/models/random_forest_model_20250517_065557.pkl'
+2025-05-17 15:42:33,734 - FileManager - INFO - 文件管理器初始化完成
+2025-05-17 15:42:33,735 - FileManager - ERROR - 加载原始数据失败: [Errno 2] No such file or directory: '.mcp_ai_predict/eth_predict/data/raw_data/cache/ETH_USDT_2022_20250517_5m.csv'
