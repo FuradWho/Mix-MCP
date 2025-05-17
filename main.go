@@ -6,6 +6,7 @@ import (
 	mcpserver "github.com/FuradWho/Mix-MCP/internal/pkg/mcp-server"
 	"github.com/FuradWho/Mix-MCP/pkg/config"
 	"log"
+	"os"
 )
 
 func main() {
@@ -14,6 +15,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+	logFile, err := os.OpenFile("/Users/xin/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_APPEND, 0777)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	log.SetOutput(logFile)
 	mcpclient.InitAllClients(conf.McpServers)
 	server, err := mcpclient.RegisterForServer()
 	if err != nil {
