@@ -1,3 +1,10 @@
+<div align="center">
+<img src="./static/logo.jpg" height="300" alt="Statusphere logo">
+</div>
+<br/>
+<div align="center">
+</div>
+
 # Mix-MCP
 
 <div align="center" style="font-size: 1.5em;">
