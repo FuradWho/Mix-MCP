@@ -36,6 +36,7 @@ func SplitStringChar(s string) []string {
 
 func FormatSymbol(exchange, symbol string) string {
 	symbols := SplitStringChar(symbol)
+	fmt.Println(symbols)
 	if len(symbols) == 0 {
 		return ""
 	}
@@ -43,9 +44,9 @@ func FormatSymbol(exchange, symbol string) string {
 		tokens := strings.Split(symbol, "USDT")
 		symbols[0] = tokens[0]
 		symbols = append(symbols, "USDT")
-	} else {
-		return symbol
 	}
+
+	fmt.Println(symbols)
 
 	newSymbol := func(s string) string {
 		return symbols[0] + s + symbols[1]
