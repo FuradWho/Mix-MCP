@@ -16,7 +16,7 @@
 <div align="center" style="font-size: 1.5em;">
   <p><strong><a href="README.md">English</a>, <a href="README_CN.md">中文</a></strong></p>
 
-  <p><strong><a href="">GitBook</a></strong></p>
+  <p><strong><a href="https://ethbeijing.gitbook.io/mixmcp">GitBook</a></strong></p>
 
 </div>
 
