@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	mcpclient "github.com/FuradWho/Mix-MCP/internal/pkg/mcp-client"
 	mcpserver "github.com/FuradWho/Mix-MCP/internal/pkg/mcp-server"
 	"github.com/FuradWho/Mix-MCP/pkg/config"
@@ -10,12 +9,11 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello World11")
-	conf, err := config.ReadConfig("/Users/xin/Projects/Mix-MCP/static/config.json")
+	conf, err := config.ReadConfig("/Users/furad/Projects/Mix-MCP/static/config.json")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	logFile, err := os.OpenFile("/Users/xin/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_RDWR, 0777)
+	logFile, err := os.OpenFile("/Users/furad/Projects/Mix-MCP/log.log", os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -49,6 +47,16 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	err = server.RegisterTool("get_internal_strategy_info", "获取当前mcp的内置交易策略", mcpserver.GetStrategyInfoHandler)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = server.RegisterTool("get_date", "通过时间戳获取当前时间", mcpserver.GetDate)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	err = server.Serve()
 	if err != nil {
 		log.Fatalln(err)

@@ -1,0 +1,44 @@
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool approveNFT: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool getBlockDetails: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool formatUnits: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool getNFTMetadata: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool transferNFT: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool erc721_tokenURI: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool getNFTOwner: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:06:12 Failed to unmarshal schema bytes for tool getNFTTokenURI: failed to unmarshal JSON schema: json: cannot unmarshal array into Go struct field .properties of type string
+2025/05/18 01:18:27 grid strategy
+2025/05/18 01:18:27 exchange not found
+2025/05/18 01:19:18 grid strategy
+2025/05/18 01:19:55 context canceled
+2025/05/18 01:23:18 grid strategy
+2025/05/18 01:24:03 context canceled
+ 00:28:01 history candle binance 1day ETHUSDT
+anceOf
+2025/05/17 20:10:29 listPrompts List all available prompts in the system
+2025/05/17 20:10:29 getBlockNumber Get the current block number
+2025/05/17 20:10:29 loadWallet loadWallet
+2025/05/17 20:10:29 sendTransaction sendTransaction
+2025/05/17 20:10:29 approveERC20 approveERC20
+2025/05/17 20:10:29 getEnsResolutionGuidance Get guidance for resolving ENS names across networks and performing operations
+2025/05/17 20:10:29 getGasPrice getGasPrice
+2025/05/17 20:10:29 getBlockDetails getBlockDetails
+2025/05/17 20:10:29 resolveName resolveName
+2025/05/17 20:10:29 erc1155_balanceOfBatch erc1155_balanceOfBatch
+2025/05/17 20:10:29 sendTransactionWithOptions sendTransactionWithOptions
+2025/05/17 20:10:29 getERC20Balance getERC20Balance
+2025/05/17 20:10:29 erc721_tokenURI erc721_tokenURI
+2025/05/17 20:10:29 getNetwork Get detailed information about a specific blockchain network. This provides the network's chain ID, native token, and RPC URL that can be used with other Ethereum tools. This network name can be used as the 'provider' parameter in other tools.
+2025/05/17 20:10:29 getFeeData getFeeData
+2025/05/17 20:10:29 generateWallet generateWallet
+2025/05/17 20:10:29 parseEther parseEther
+2025/05/17 20:10:29 signMessage signMessage
+2025/05/17 20:11:03 history candle bitget 1h ETHUSDT
+T
+2025/05/17 19:48:57 history candle bitget 1h ETHUSDT
+25/05/17 19:12:30 history candle bitget 1h ETHUSDT
+2025/05/17 19:20:50 grid strategy
+2025/05/17 19:20:50 exchange not found
+2025/05/17 19:21:03 grid strategy
+2025/05/17 19:21:03 exchange not found
+2025/05/17 19:21:18 grid strategy
+2025/05/17 19:21:18 exchange not found

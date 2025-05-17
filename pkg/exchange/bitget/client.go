@@ -663,6 +663,7 @@ func (c *Client) GetHistoryCandles(symbol string, granularity string, endTime st
 	params["symbol"] = symbol
 	params["granularity"] = granularity
 	params["endTime"] = endTime
+	params["limit"] = "6"
 
 	uri := "/api/v2/spot/market/history-candles"
 

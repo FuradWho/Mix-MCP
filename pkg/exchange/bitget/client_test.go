@@ -41,7 +41,7 @@ func TestGetK(t *testing.T) {
 	}
 	ex, _ := New(exBytes)
 
-	accountBalance, err := ex.GetHistoryCandles("BTCUSDT", "1day", TimesStamp())
+	accountBalance, err := ex.GetHistoryCandles("BTCUSDT", "1h", TimesStamp())
 	if err != nil {
 		t.Error(err)
 	}

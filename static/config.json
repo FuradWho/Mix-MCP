@@ -12,9 +12,9 @@
     },
     {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-       "coincap-mcp"
+        "/Users/furad/Projects/binance-mcp/dist/index.js"
       ],
       "env": [
       ]
