@@ -59,8 +59,8 @@ func (server *StdioServer) Register() error {
 	for _, t := range tools.Tools {
 		var toolDescription string
 		if t.Description == nil {
-			toolDescription = ""
-			continue
+			toolDescription = t.Name
+			//continue
 		} else {
 			toolDescription = *t.Description
 		}
