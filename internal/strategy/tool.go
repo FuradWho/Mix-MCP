@@ -43,8 +43,6 @@ func FormatSymbol(exchange, symbol string) string {
 		tokens := strings.Split(symbol, "USDT")
 		symbols[0] = tokens[0]
 		symbols = append(symbols, "USDT")
-	} else {
-		return symbol
 	}
 
 	newSymbol := func(s string) string {

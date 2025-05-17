@@ -32,6 +32,7 @@ type CancelStrategyArgs struct {
 
 func GridHandler(args GridArgs) (*mcp.ToolResponse, error) {
 	log.Println("grid strategy")
+	args.Symbol = strategy.FormatSymbol(args.ExchangeName, args.Symbol)
 	exCf, err := config.ReadExchangeConfig(args.ExchangeName)
 	if err != nil {
 		log.Println(err.Error())
@@ -66,7 +67,8 @@ func GridHandler(args GridArgs) (*mcp.ToolResponse, error) {
 }
 
 func DCAHandler(args DCAArgs) (*mcp.ToolResponse, error) {
-	log.Println("dca strategy")
+	args.Symbol = strategy.FormatSymbol(args.ExchangeName, args.Symbol)
+	log.Println("dca strategy", args.ExchangeName, args.DCAArgs.Symbol)
 	exCf, err := config.ReadExchangeConfig(args.ExchangeName)
 	if err != nil {
 		log.Println(err.Error())
@@ -102,6 +104,7 @@ func DCAHandler(args DCAArgs) (*mcp.ToolResponse, error) {
 
 func MakerHandler(args MakerArgs) (*mcp.ToolResponse, error) {
 	log.Println("maker strategy")
+	args.Symbol = strategy.FormatSymbol(args.ExchangeName, args.Symbol)
 	exCf, err := config.ReadExchangeConfig(args.ExchangeName)
 	if err != nil {
 		log.Println(err.Error())
