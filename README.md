@@ -5,6 +5,9 @@
 <div align="center">
 
   ![Language](https://img.shields.io/badge/language-golang-brightgreen)
+  ![Language](https://img.shields.io/badge/language-python-brightgreen)
+  ![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen)
+  ![License](https://img.shields.io/badge/license-MIT-yellow)
 
 </div>
 
