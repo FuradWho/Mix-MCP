@@ -13,6 +13,9 @@ func InitConfigPath(path string) {
 }
 
 func ReadConfig(path string) (Config, error) {
+	if path != configPath {
+		configPath = path
+	}
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, err
