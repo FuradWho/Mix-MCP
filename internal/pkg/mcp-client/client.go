@@ -2,6 +2,7 @@ package mcpclient
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/FuradWho/Mix-MCP/pkg/config"
 	mcp "github.com/FuradWho/Mix-MCP/pkg/mcp-golang"
@@ -27,6 +28,15 @@ type StdioServer struct {
 	Env         []string
 	Stdin       *io.WriteCloser
 	Stdout      *io.ReadCloser
+}
+
+func BytesToJSONSchema(data []byte) (*jsonschema.Schema, error) {
+	schema := &jsonschema.Schema{}
+	err := json.Unmarshal(data, schema)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON schema: %w", err)
+	}
+	return schema, nil
 }
 
 func (server *StdioServer) Register() error {
@@ -65,7 +75,6 @@ func (server *StdioServer) Register() error {
 		} else {
 			toolDescription = *t.Description
 		}
-		fmt.Println(t.Name, t.Description)
 		clientsMap[t.Name] = Tool{
 			BelongClient: &Client{
 				TransportType:  1,
@@ -101,7 +110,6 @@ type Tool struct {
 func InitAllClients(servers []config.McpServerConfig) {
 	var err error
 	clientsMap = make(map[string]Tool, len(servers))
-	fmt.Println(len(servers))
 	for _, s := range servers {
 		if s.Type == "stdio" {
 			server := &StdioServer{
@@ -131,8 +139,53 @@ func RegisterForServer() (*mcp.Server, error) {
 		handler := func(arguments any) (*mcp.ToolResponse, error) {
 			return v.BelongClient.ClientInstance.CallTool(context.Background(), name, arguments)
 		}
-		log.Println(v.Name, v.Description)
-		err = server.RegisterToolWithInputSchema(name, v.Description, handler, jsonschema.Reflect(v.InputSchema))
+
+		//log.Printf("Tool %s schema: %+v", name, jsonschema.Reflect(v.InputSchema))
+		//inputSchema := v.InputSchema.(jsonschema.Schema)
+		//jsonschema.Reflect(inputSchema)
+
+		var schema *jsonschema.Schema
+
+		switch inputSchema := v.InputSchema.(type) {
+		case []byte:
+			// 直接从 bytes 反序列化
+			schema, err = BytesToJSONSchema(inputSchema)
+			if err != nil {
+				log.Printf("Failed to unmarshal schema for tool %s: %v", name, err)
+				continue
+			}
+
+		case *jsonschema.Schema:
+			// 已经是 Schema 类型
+			schema = inputSchema
+
+		case map[string]interface{}:
+			// 如果是 map，先转换成 JSON bytes
+			bytes, err := json.Marshal(inputSchema)
+			if err != nil {
+				log.Printf("Failed to marshal schema map for tool %s: %v", name, err)
+				continue
+			}
+			schema, err = BytesToJSONSchema(bytes)
+			if err != nil {
+				log.Printf("Failed to unmarshal schema bytes for tool %s: %v", name, err)
+				continue
+			}
+
+		default:
+			log.Printf("Unsupported schema type for tool %s: %T", name, v.InputSchema)
+			continue
+		}
+
+		// 确保 Properties 不为 nil
+		//if schema.Properties == nil {
+		//	schema.Properties = make(map[string]*jsonschema.Schema)
+		//}
+
+		err = server.RegisterToolWithInputSchema(name, v.Description, handler, schema)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	return server, err
 }
