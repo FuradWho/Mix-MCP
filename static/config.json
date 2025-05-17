@@ -13,10 +13,10 @@
   ],
   "exchanges": {
     "bitget": {
-      "url": "",
-      "apiKey": "",
-      "secretKey": "",
-      "password": ""
+      "url": "https://api.bitget.com",
+      "apiKey": "bg_ddf45d5324092cd9d300a53882e4f432",
+      "secretKey": "dbf03b246f8b62c6a50935dc778bc0fcfd51e447ffff8bacead49eaec6ab1dc4",
+      "password": "test12345678"
     },
     "binance": {
       "url": "",

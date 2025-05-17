@@ -4,6 +4,7 @@ package strategy
 import (
 	"context"
 	"github.com/FuradWho/Mix-MCP/internal/store"
+	"github.com/FuradWho/Mix-MCP/pkg/base"
 	"log"
 
 	"github.com/shopspring/decimal"
@@ -26,9 +27,9 @@ func Grid(ctx context.Context, ex store.ExchangeStore, cfg GridArgs) error {
 
 	ids := make(map[string]string) // price -> id
 	for _, p := range prices {
-		side := "buy"
+		side := base.BID
 		if p.GreaterThan(decimal.NewFromFloat(cfg.Low).Add(decimal.NewFromFloat(cfg.High)).Div(decimal.NewFromInt(2))) {
-			side = "sell"
+			side = base.ASK
 		}
 		id, err := ex.LimitOrder(cfg.Symbol, side, p.String(), cfg.Size)
 		if err != nil {
@@ -40,5 +41,6 @@ func Grid(ctx context.Context, ex store.ExchangeStore, cfg GridArgs) error {
 
 	// 实际使用时：监听成交事件并在相邻价格补单，可配合 WebSocket
 	<-ctx.Done()
+	ex.CancelOrders(cfg.Symbol)
 	return ctx.Err()
 }

@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"github.com/FuradWho/Mix-MCP/internal/store"
+	"github.com/FuradWho/Mix-MCP/pkg/base"
 	"log"
 	"time"
 
@@ -21,6 +22,7 @@ func PassiveMaker(ctx context.Context, ex store.ExchangeStore, cfg MakerArgs) er
 	for {
 		select {
 		case <-ctx.Done():
+			ex.CancelOrders(cfg.Symbol)
 			return ctx.Err()
 		default:
 			break
@@ -46,10 +48,10 @@ func PassiveMaker(ctx context.Context, ex store.ExchangeStore, cfg MakerArgs) er
 			ex.CancelOrder(cfg.Symbol, askID)
 		}
 
-		if bidID, err = ex.MakerOrder(cfg.Symbol, "buy", bid.String(), cfg.Size); err != nil {
+		if bidID, err = ex.MakerOrder(cfg.Symbol, base.BID, bid.String(), cfg.Size); err != nil {
 			log.Println("maker buy err:", err)
 		}
-		if askID, err = ex.MakerOrder(cfg.Symbol, "sell", ask.String(), cfg.Size); err != nil {
+		if askID, err = ex.MakerOrder(cfg.Symbol, base.ASK, ask.String(), cfg.Size); err != nil {
 			log.Println("maker sell err:", err)
 		}
 

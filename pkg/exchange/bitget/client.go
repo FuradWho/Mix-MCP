@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/FuradWho/Mix-MCP/pkg/base"
-	"github.com/yasseldg/bitget/config"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +26,7 @@ type Client struct {
 	signer    *Signer
 }
 
-func New(params []byte) (c *Client, err error) {
+func New(params []byte) (c Client, err error) {
 	c.client = &http.Client{
 		Timeout: time.Duration(30) * time.Second,
 	}
@@ -77,6 +76,7 @@ func Headers(request *http.Request, apikey string, timestamp string, sign string
 	request.Header.Add(constants.BgAccessSign, sign)
 	request.Header.Add(constants.BgAccessTimestamp, timestamp)
 	request.Header.Add(constants.BgAccessPassphrase, passphrase)
+	request.Header.Add("paptrading", strconv.Itoa(1))
 }
 
 func NewParams() map[string]string {
@@ -142,7 +142,7 @@ func (c *Client) DoPost(uri string, params map[string]string) (*http.Response, e
 	body, _ := BuildJsonParams(params)
 	bodyJson, err := json.Marshal(params)
 	sign := c.signer.Sign(constants.POST, uri, body, timesStamp)
-	requestUrl := config.BaseUrl + uri
+	requestUrl := c.baseUrl + uri
 	buffer := strings.NewReader(string(bodyJson))
 	request, err := http.NewRequest(constants.POST, requestUrl, buffer)
 
@@ -164,7 +164,7 @@ func (c *Client) GetAccountBalance(currency string) ([]string, error) {
 	if len(currency) > 0 {
 		params["coin"] = currency
 	}
-	uri := constants.SpotAccount + "/assets-lite"
+	uri := "/api/v2/spot/account/assets"
 
 	resp, err := c.DoGet(uri, params)
 	var balance struct {
@@ -207,16 +207,16 @@ func (c *Client) GetAccountBalance(currency string) ([]string, error) {
 
 func (c *Client) MarketOrder(symbol, side, size string) (string, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 	params["orderType"] = "market"
-	params["force"] = "normal"
+	params["force"] = "gtc"
 	if side == base.BID {
 		params["side"] = "buy"
 	} else if side == base.ASK {
 		params["side"] = "sell"
 	}
 	if side == base.ASK {
-		params["quantity"] = size
+		params["size"] = size
 	} else {
 		price, err := c.GetMarketPrice(symbol)
 		if err != nil {
@@ -224,9 +224,9 @@ func (c *Client) MarketOrder(symbol, side, size string) (string, error) {
 		}
 		p, _ := strconv.ParseFloat(price, 64)
 		s, _ := strconv.ParseFloat(size, 64)
-		params["quantity"] = strconv.FormatFloat(s*p, 'f', 2, 64)
+		params["size"] = strconv.FormatFloat(s*p, 'f', 2, 64)
 	}
-	uri := constants.SpotTrade + "/orders"
+	uri := "/api/v2/spot/trade/place-order"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return "", err
@@ -262,9 +262,9 @@ func (c *Client) MarketOrder(symbol, side, size string) (string, error) {
 
 func (c *Client) GetMarketPrice(symbol string) (string, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 
-	uri := constants.SpotMarket + "/ticker"
+	uri := "/api/v2/spot/market/tickers"
 
 	resp, err := c.DoGet(uri, params)
 
@@ -278,7 +278,7 @@ func (c *Client) GetMarketPrice(symbol string) (string, error) {
 			Symbol    string `json:"symbol"`
 			High24H   string `json:"high24h"`
 			Low24H    string `json:"low24h"`
-			Close     string `json:"close"`
+			LastPr    string `json:"lastPr"`
 			QuoteVol  string `json:"quoteVol"`
 			BaseVol   string `json:"baseVol"`
 			UsdtVol   string `json:"usdtVol"`
@@ -292,6 +292,7 @@ func (c *Client) GetMarketPrice(symbol string) (string, error) {
 			Change    string `json:"change"`
 		} `json:"data"`
 	}
+
 	if resp.StatusCode != http.StatusOK {
 		data, _ := ioutil.ReadAll(resp.Body)
 		return "", fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
@@ -306,19 +307,19 @@ func (c *Client) GetMarketPrice(symbol string) (string, error) {
 		return "", err
 	}
 	err = json.Unmarshal(data, &result)
-	return result.Data.Close, err
+	return result.Data.LastPr, err
 }
 
 func (c *Client) Depth(symbol, limit string) (base.WsData, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 	if len(limit) > 0 {
 		params["limit"] = limit
 	}
 
 	params["type"] = "step0"
 
-	uri := constants.SpotMarket + "/depth"
+	uri := "/api/v2/spot/market/orderbook"
 
 	resp, err := c.DoGet(uri, params)
 	if err != nil {
@@ -330,7 +331,7 @@ func (c *Client) Depth(symbol, limit string) (base.WsData, error) {
 		Data struct {
 			Asks      [][]string `json:"asks"`
 			Bids      [][]string `json:"bids"`
-			Timestamp string     `json:"timestamp"`
+			Timestamp string     `json:"ts"`
 		} `json:"data"`
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -370,9 +371,8 @@ func (c *Client) Depth(symbol, limit string) (base.WsData, error) {
 
 func (c *Client) GetOrder(symbol, id string) (base.OrderInfo, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
 	params["orderId"] = id
-	uri := constants.SpotTrade + "/orderInfo"
+	uri := "/api/v2/spot/trade/orderInfo"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return base.OrderInfo{}, err
@@ -382,12 +382,12 @@ func (c *Client) GetOrder(symbol, id string) (base.OrderInfo, error) {
 		Msg         string `json:"msg"`
 		RequestTime int64  `json:"requestTime"`
 		Data        []struct {
-			AccountId        string `json:"accountId"`
+			UserId           string `json:"userId"`
 			Symbol           string `json:"symbol"`
 			OrderId          string `json:"orderId"`
 			ClientOrderId    string `json:"clientOrderId"`
 			Price            string `json:"price"`
-			Quantity         string `json:"quantity"`
+			Size             string `json:"size"`
 			OrderType        string `json:"orderType"`
 			Side             string `json:"side"`
 			Status           string `json:"status"`
@@ -444,7 +444,7 @@ func (c *Client) GetOrder(symbol, id string) (base.OrderInfo, error) {
 		Symbol:   symbol,
 		Side:     side,
 		Price:    result.Data[0].Price,
-		Quantity: result.Data[0].Quantity,
+		Quantity: result.Data[0].Size,
 		Type:     typ,
 		Filled:   result.Data[0].FillQuantity,
 		USDT:     result.Data[0].FillTotalAmount,
@@ -457,18 +457,18 @@ func (c *Client) GetOrder(symbol, id string) (base.OrderInfo, error) {
 
 func (c *Client) LimitOrder(symbol, side, price, size string) (string, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 	params["orderType"] = "limit"
-	params["force"] = "normal"
+	params["force"] = "gtc"
 	if side == base.BID {
 		params["side"] = "buy"
 	} else if side == base.ASK {
 		params["side"] = "sell"
 	}
 
-	params["quantity"] = size
+	params["size"] = size
 	params["price"] = price
-	uri := constants.SpotTrade + "/orders"
+	uri := "/api/v2/spot/trade/place-order"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return "", err
@@ -505,7 +505,7 @@ func (c *Client) LimitOrder(symbol, side, price, size string) (string, error) {
 
 func (c *Client) MakerOrder(symbol, side, price, size string) (string, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 	params["orderType"] = "limit"
 	params["force"] = "post_only"
 	if side == base.BID {
@@ -513,9 +513,9 @@ func (c *Client) MakerOrder(symbol, side, price, size string) (string, error) {
 	} else if side == base.ASK {
 		params["side"] = "sell"
 	}
-	params["quantity"] = size
+	params["size"] = size
 	params["price"] = price
-	uri := constants.SpotTrade + "/orders"
+	uri := "/api/v2/spot/trade/place-order"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return "", err
@@ -552,7 +552,7 @@ func (c *Client) MakerOrder(symbol, side, price, size string) (string, error) {
 
 func (c *Client) TakerOrder(symbol, side, price, size string) (string, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 	params["orderType"] = "limit"
 	params["force"] = "ioc"
 	if side == base.BID {
@@ -561,9 +561,9 @@ func (c *Client) TakerOrder(symbol, side, price, size string) (string, error) {
 		params["side"] = "sell"
 	}
 
-	params["quantity"] = size
+	params["size"] = size
 	params["price"] = price
-	uri := constants.SpotTrade + "/orders"
+	uri := "/api/v2/spot/trade/place-order"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return "", err
@@ -601,9 +601,9 @@ func (c *Client) TakerOrder(symbol, side, price, size string) (string, error) {
 
 func (c *Client) CancelOrder(symbol, id string) (bool, error) {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 	params["orderId"] = id
-	uri := constants.SpotTrade + "/cancel-order"
+	uri := "/api/v2/spot/trade/cancel-order"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return false, err
@@ -636,9 +636,9 @@ func (c *Client) CancelOrder(symbol, id string) (bool, error) {
 
 func (c *Client) CancelOrders(symbol string) error {
 	params := NewParams()
-	params["symbol"] = symbol + "_SPBL"
+	params["symbol"] = symbol
 
-	uri := constants.SpotTrade + "/cancel-symbol-order"
+	uri := "/api/v2/spot/trade/cancel-symbol-order"
 	resp, err := c.DoPost(uri, params)
 	if err != nil {
 		return err

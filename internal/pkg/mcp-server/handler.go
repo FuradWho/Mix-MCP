@@ -11,7 +11,7 @@ import (
 
 type GridArgs struct {
 	ExchangeName string `json:"exchange_name"  jsonschema:"required,description=交易所名"`
-	strategy.GridCfg
+	strategy.GridArgs
 }
 
 func GridHandler(args GridArgs) (*mcp.ToolResponse, error) {
@@ -24,7 +24,7 @@ func GridHandler(args GridArgs) (*mcp.ToolResponse, error) {
 		return mcp.NewToolResponse(mcp.NewTextContent(err.Error())), err
 	}
 	ex := store.NewStore().Bitget(exBytes)
-	err = strategy.Grid(context.Background(), ex, args.GridCfg)
+	err = strategy.Grid(context.Background(), ex, args.GridArgs)
 	if err != nil {
 		return mcp.NewToolResponse(mcp.NewTextContent(err.Error())), err
 	}

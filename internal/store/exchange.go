@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"github.com/FuradWho/Mix-MCP/pkg/base"
 	"github.com/FuradWho/Mix-MCP/pkg/exchange/bitget"
 )
@@ -19,12 +20,13 @@ func NewStore() *Store {
 var _ ExchangeStore = (*bitget.Client)(nil)
 
 func (s *Store) Bitget(params []byte) ExchangeStore {
+	fmt.Println(string(params))
 	client, err := bitget.New(params)
 	if err != nil {
 		return nil
 	}
 
-	return client
+	return &client
 }
 
 type ExchangeStore interface {

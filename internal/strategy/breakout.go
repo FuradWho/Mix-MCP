@@ -4,6 +4,7 @@ package strategy
 import (
 	"context"
 	"github.com/FuradWho/Mix-MCP/internal/store"
+	"github.com/FuradWho/Mix-MCP/pkg/base"
 	"log"
 	"time"
 
@@ -26,6 +27,7 @@ func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutArgs) err
 	for {
 		select {
 		case <-ctx.Done():
+			ex.CancelOrders(cfg.Symbol)
 			return ctx.Err()
 		default:
 			break
@@ -55,7 +57,7 @@ func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutArgs) err
 		trigger := maxHigh.Mul(decimal.NewFromInt(1).Add(decimal.NewFromFloat(cfg.Buffer)))
 		if p.GreaterThan(trigger) {
 			// 1. 追涨
-			orderID, err := ex.MarketOrder(cfg.Symbol, "buy", cfg.Size)
+			orderID, err := ex.MarketOrder(cfg.Symbol, base.BID, cfg.Size)
 			if err != nil {
 				log.Println("mkt buy:", err)
 				continue
@@ -76,7 +78,7 @@ func Breakout(ctx context.Context, ex store.ExchangeStore, cfg BreakoutArgs) err
 				}
 				px, _ := decimal.NewFromString(fetch(ex.GetMarketPrice(cfg.Symbol)))
 				if px.GreaterThan(tp) || px.LessThan(sl) {
-					ex.MarketOrder(cfg.Symbol, "sell", cfg.Size)
+					ex.MarketOrder(cfg.Symbol, base.BID, cfg.Size)
 					log.Println("exit at", px)
 					break
 				}
