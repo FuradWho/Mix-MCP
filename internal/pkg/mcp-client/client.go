@@ -48,6 +48,7 @@ func (server *StdioServer) Register() error {
 	transport := stdio.NewStdioServerTransportWithIO(serverStdout, serverStdin)
 	client := mcp.NewClient(transport)
 	_, err = client.Initialize(context.Background())
+
 	if err != nil {
 		return fmt.Errorf("failed to initializet server: %s", err.Error())
 	}
@@ -64,6 +65,7 @@ func (server *StdioServer) Register() error {
 		} else {
 			toolDescription = *t.Description
 		}
+		fmt.Println(t.Name, t.Description)
 		clientsMap[t.Name] = Tool{
 			BelongClient: &Client{
 				TransportType:  1,
@@ -99,6 +101,7 @@ type Tool struct {
 func InitAllClients(servers []config.McpServerConfig) {
 	var err error
 	clientsMap = make(map[string]Tool, len(servers))
+	fmt.Println(len(servers))
 	for _, s := range servers {
 		if s.Type == "stdio" {
 			server := &StdioServer{
@@ -106,10 +109,13 @@ func InitAllClients(servers []config.McpServerConfig) {
 				CommandArgs: s.Args,
 				Env:         s.Env,
 			}
+
 			err = server.Register()
 			if err != nil {
 				log.Println(err.Error())
 			}
+
+			fmt.Println(s)
 		}
 	}
 }

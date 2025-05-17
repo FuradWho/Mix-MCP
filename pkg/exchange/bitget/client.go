@@ -657,3 +657,42 @@ func (c *Client) CancelOrders(symbol string) error {
 	}
 	return nil
 }
+
+func (c *Client) GetHistoryCandles(symbol string, granularity string, endTime string) ([][]string, error) {
+	params := NewParams()
+	params["symbol"] = symbol
+	params["granularity"] = granularity
+	params["endTime"] = endTime
+
+	uri := "/api/v2/spot/market/history-candles"
+
+	resp, err := c.DoGet(uri, params)
+
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Code        string     `json:"code"`
+		Msg         string     `json:"msg"`
+		RequestTime int64      `json:"requestTime"`
+		Data        [][]string `json:"data"`
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("response status code is not OK, response code is %d, body:%s", resp.StatusCode, string(data))
+	}
+
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &result)
+	if len(result.Data) > 0 {
+		return result.Data, err
+	}
+	return nil, err
+}
