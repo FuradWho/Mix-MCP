@@ -301,9 +301,9 @@ async def analyze_trading_strategy(market_data: str, strategy_json: str) -> str:
 @mcp_app.tool()
 async def analyze_market_conditions(market_situation: str = None) -> Dict[str, Any]:
     """
-    分析当前市场状况，提供全面的ETH市场指标和分析，返回市场分析报告
+    根据K线数据分析当前市场状况，提供全面的ETH市场指标和分析，返回市场分析报告
     Args:
-        market_situation (str, optional): 用户描述的市场情况，如果为None则返回空模板
+        market_situation (str, optional): K线数据，形式为["1747123200000","2461.1","2471.49","2451.28","2457.38","33.0325","81283.558342","81283.558342"]
     Returns:
         Dict[str, Any]: 包含多维度市场分析结果的字典
     """
@@ -481,11 +481,24 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
         json_prompt = f"""
         你是一位专业的以太坊市场分析专家，拥有丰富的加密货币市场分析经验和深厚的技术分析知识。
         
-        ## 当前市场情况描述
+        ## K线数据的解释
+
+        | 返回字段 | 参数类型 | 字段说明 |
+        | --- | --- | --- |
+        | index[0] | String | 系统时间戳，Unix毫秒时间戳，例如1690196141868 |
+        | index[1] | String | 开盘价格 |
+        | index[2] | String | 最高价格 |
+        | index[3] | String | 最低价格 |
+        | index[4] | String | 收盘价格 |
+        | index[5] | String | 基础币成交量，如“BTCUSDT”交易对中的“BTC” |
+        | index[6] | String | USDT成交量 |
+        | index[7] | String | 计价币成交量，如“BTCUSDT”交易对中的“USDT” |
+
+        ## 当前K线数据
         {market_situation}
         
         ## 分析任务
-        请基于用户提供的市场情况描述，对当前ETH市场进行全面的分析，填充以下JSON模板中的null值。
+        请基于用户提供的K线数据，对当前ETH市场进行全面的分析，填充以下JSON模板中的null值。
         你的分析应该全面、客观、专业，覆盖各个方面的市场指标。
         
         对于每一个null值：
@@ -513,7 +526,7 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
         json_response = client.chat.completions.create(
             model="qwen-plus",  # 使用通义千问模型
             messages=[
-                {"role": "system", "content": "你是一个专业的加密货币市场分析专家，擅长对ETH市场进行全面分析并提供结构化的JSON格式分析结果。"},
+                {"role": "system", "content": "你是一个专业的加密货币市场分析专家，擅长根据K线数据对ETH市场进行全面分析并提供结构化的JSON格式分析结果。"},
                 {"role": "user", "content": json_prompt}
             ],
             temperature=0.2,  # 较低的温度以获得更一致的、分析性的回复
