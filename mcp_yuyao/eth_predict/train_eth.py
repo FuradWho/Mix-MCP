@@ -23,7 +23,7 @@ CONFIG = {
         'symbol': 'ETH-USDT',      # 交易对
         'timeframe': '5m',         # 改为 5m，这是币安支持的时间间隔
         'years_back': 3,           # 获取过去几年的数据
-        'proxy': {'http': 'http://localhost:7897', 'https': 'http://localhost:7897'}
+        'proxy': None
     },
     
     # 数据处理参数
