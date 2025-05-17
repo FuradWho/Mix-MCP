@@ -3,6 +3,7 @@
 </div>
 <br/>
 <div align="center">
+  ![Language](https://img.shields.io/badge/language-golang-brightgreen)
 </div>
 
 # Mix-MCP
