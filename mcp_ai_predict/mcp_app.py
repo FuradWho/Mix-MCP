@@ -134,7 +134,7 @@ async def analyze_trading_strategy(market_data: str, strategy_json: str) -> str:
     
     # 调用大语言模型，启用流式输出
     response = client.chat.completions.create(
-        model="qwen3-235b-a22b",  # 使用通义千问模型
+        model="qwen-plus",  # 使用通义千问模型
         messages=[
             {"role": "system", "content": "你是一个专业的加密货币交易策略分析专家，擅长分析各类交易策略的优劣势和风险收益比。你的分析报告采用表情符号、表格和视觉化元素使内容更直观易读。"},
             {"role": "user", "content": prompt}
@@ -307,6 +307,23 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
     Returns:
         Dict[str, Any]: 包含多维度市场分析结果的字典
     """
+    # 样例市场报告格式
+    sample_report = """
+# 📊 市场分析报告样例
+
+## 📈 市场概览
+
+| 指标           | 数值                  | 状态评估              |
+|---------------|------------------------|----------------------|
+| **当前价格**   | **XXXX美元**          | 🟢/🟡/🔴 趋势评估     |
+
+## 📊 技术面分析
+
+| 技术指标       | 当前值               | 解读                  |
+|---------------|----------------------|------------------------|
+| **RSI(14)**   | **数值**             | 🟡/🟢/🔴 解读          |
+"""
+
     # 如果没有提供市场情况，返回空模板
     if market_situation is None or market_situation.strip() == "":
         return {
@@ -325,6 +342,7 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
         )
         
+        # 首先获取市场分析数据
         # 直接构建模板JSON字符串(将数值设为"null")
         template_json = """
         {
@@ -364,32 +382,6 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
                 {"price": null, "strength": null, "type": null, "confirmation": null},
                 {"price": null, "strength": null, "type": null, "confirmation": null}
             ],
-            
-            "market_sentiment": {
-                "overall": null,
-                "strength": null,
-                "fear_greed_index": null,
-                "social_sentiment": {
-                    "twitter": null,
-                    "reddit": null,
-                    "weibo": null,
-                    "telegram": null
-                },
-                "derivatives_sentiment": {
-                    "funding_rate": null,
-                    "funding_rate_trend": null,
-                    "long_short_ratio": null,
-                    "liquidations_24h": {
-                        "long": null,
-                        "short": null
-                    },
-                    "open_interest": {
-                        "value": null,
-                        "change_24h": null
-                    }
-                }
-            },
-            
             "technical_indicators": {
                 "moving_averages": {
                     "sma_50": {"value": null, "position": null, "distance": null},
@@ -485,8 +477,8 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
         }
         """
         
-        # 构建提示词
-        prompt = f"""
+        # 构建提示词获取市场分析数据
+        json_prompt = f"""
         你是一位专业的以太坊市场分析专家，拥有丰富的加密货币市场分析经验和深厚的技术分析知识。
         
         ## 当前市场情况描述
@@ -517,32 +509,59 @@ async def analyze_market_conditions(market_situation: str = None) -> Dict[str, A
         - 确保你的分析在技术上是准确的，符合加密货币市场分析的专业标准
         """
         
-        # 调用大语言模型
-        response = client.chat.completions.create(
+        # 调用大语言模型获取JSON格式的市场分析
+        json_response = client.chat.completions.create(
             model="qwen-plus",  # 使用通义千问模型
             messages=[
                 {"role": "system", "content": "你是一个专业的加密货币市场分析专家，擅长对ETH市场进行全面分析并提供结构化的JSON格式分析结果。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": json_prompt}
             ],
             temperature=0.2,  # 较低的温度以获得更一致的、分析性的回复
             response_format={"type": "json_object"},  # 要求返回JSON格式
             max_tokens=4000
         )
         
-        return '=' * 30 + f'市场分析报告:\n' + '=' * 30 + f'\n' + response.choices[0].message.content
-        # # 解析返回的JSON
-        # if hasattr(response, 'choices') and len(response.choices) > 0:
-        #     content = response.choices[0].message.content
-        #     try:
-        #         # 尝试解析JSON
-        #         analysis_result = json.loads(content)
-        #         return analysis_result
-        #     except json.JSONDecodeError:
-        #         # 如果无法解析JSON，返回原始内容
-        #         return content
-        # else:
-        #     return {"error": "大模型返回结果格式错误"}
-            
+        market_data = json_response.choices[0].message.content
+        
+        # 然后使用这些数据生成视觉化的市场分析报告
+        visual_prompt = f"""
+        你是一位专业的加密货币市场分析专家，拥有丰富的经验和深厚的市场洞察力。请将以下JSON格式的市场分析数据转换为视觉化美观的市场分析报告。
+        
+        ## 市场分析报告
+        ```json
+        {market_data}
+        ```
+        
+        ## 视觉化呈现要求
+        你的分析应当以视觉化美化的方式呈现，包括：
+        
+        - 使用 ✅ 和 ❌ 等表情符号强调重点
+        - 使用 🔴、🟢、🟡 表示不同风险等级
+        - 通过表格格式整理关键信息
+        - 使用加粗标记重要数据增强可读性
+        - 分段清晰，使用标题和分隔线提高可读性
+        - 使用 📊 📈 💰 ⚠️ 等主题相关的表情符号增强视觉辨识度
+        
+        ## 报告结构
+        请按照以下结构组织你的报告：
+        
+        1. 📊 市场概览：当前价格、趋势方向、交易量等核心信息
+        2. 📈 技术面分析：移动平均线、RSI、MACD等技术指标分析
+        3. 💹 支撑阻力位：关键支撑位和阻力位分析
+        4. 🌊 市场情绪：包括社交媒体情绪、衍生品市场情绪等
+        5. ⛓️ 链上指标：活跃地址、交易量、交易所资金流等链上数据分析
+        6. ⚖️ 风险评估：各类市场风险的评估
+        7. 🔮 短期预测：未来价格走势预测
+        8. 📝 交易建议：基于当前市场分析的交易建议
+        
+        ## 样例格式
+        
+        {sample_report}
+        
+        请确保你的报告专业、全面、客观，并充分利用表格、视觉化元素使内容更加直观。
+        """
+        return visual_prompt
+        
     except Exception as e:
         return {"error": f"分析过程中发生错误：{str(e)}"}
 
