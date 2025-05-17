@@ -274,22 +274,8 @@ func (c *Client) GetMarketPrice(symbol string) (string, error) {
 	var result struct {
 		Code string `json:"code"`
 		Msg  string `json:"msg"`
-		Data struct {
-			Symbol    string `json:"symbol"`
-			High24H   string `json:"high24h"`
-			Low24H    string `json:"low24h"`
-			LastPr    string `json:"lastPr"`
-			QuoteVol  string `json:"quoteVol"`
-			BaseVol   string `json:"baseVol"`
-			UsdtVol   string `json:"usdtVol"`
-			Ts        string `json:"ts"`
-			BuyOne    string `json:"buyOne"`
-			SellOne   string `json:"sellOne"`
-			BidSz     string `json:"bidSz"`
-			AskSz     string `json:"askSz"`
-			OpenUtc0  string `json:"openUtc0"`
-			ChangeUtc string `json:"changeUtc"`
-			Change    string `json:"change"`
+		Data []struct {
+			LastPr string `json:"lastPr"`
 		} `json:"data"`
 	}
 
@@ -301,13 +287,15 @@ func (c *Client) GetMarketPrice(symbol string) (string, error) {
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
 	}
-
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
 	err = json.Unmarshal(data, &result)
-	return result.Data.LastPr, err
+	if len(result.Data) > 0 {
+		return result.Data[0].LastPr, err
+	}
+	return "", err
 }
 
 func (c *Client) Depth(symbol, limit string) (base.WsData, error) {

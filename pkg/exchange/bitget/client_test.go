@@ -3,7 +3,6 @@ package bitget
 import (
 	"fmt"
 	"github.com/FuradWho/Mix-MCP/pkg/base"
-
 	"github.com/FuradWho/Mix-MCP/pkg/config"
 	"github.com/goccy/go-json"
 	"testing"
@@ -22,7 +21,7 @@ func TestGrid(t *testing.T) {
 	}
 	ex, _ := New(exBytes)
 
-	accountBalance, err := ex.LimitOrder("BTCUSDT", base.BID, "90000", "0.001")
+	accountBalance, err := ex.MarketOrder("BTCUSDT", base.BID, "0.001")
 	if err != nil {
 		t.Error(err)
 	}
