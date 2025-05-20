@@ -3,14 +3,17 @@ package mcpclient
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/FuradWho/Mix-MCP/pkg/mcp-golang/transport/http"
+	"io"
+	"log"
+	"os/exec"
+
 	"github.com/FuradWho/Mix-MCP/pkg/config"
 	mcp "github.com/FuradWho/Mix-MCP/pkg/mcp-golang"
 	"github.com/FuradWho/Mix-MCP/pkg/mcp-golang/transport/stdio"
 	"github.com/invopop/jsonschema"
-	"io"
-	"log"
-	"os/exec"
 )
 
 var clientsMap map[string]Tool
@@ -20,6 +23,8 @@ type McpServer interface {
 }
 
 type HttpServer struct {
+	BaseUrl string
+	Path    string
 }
 
 type StdioServer struct {
@@ -90,6 +95,36 @@ func (server *StdioServer) Register() error {
 }
 
 func (server *HttpServer) Register() error {
+	transport := http.NewHTTPClientTransport(server.Path).WithBaseURL(server.BaseUrl)
+	client := mcp.NewClient(transport)
+	_, err := client.Initialize(context.Background())
+
+	if err != nil {
+		return fmt.Errorf("failed to initializet server: %s", err.Error())
+	}
+	cursor := ""
+	tools, err := client.ListTools(context.Background(), &cursor)
+	if err != nil {
+		return err
+	}
+	for _, t := range tools.Tools {
+		var toolDescription string
+		if t.Description == nil {
+			toolDescription = t.Name
+		} else {
+			toolDescription = *t.Description
+		}
+		clientsMap[t.Name] = Tool{
+			BelongClient: &Client{
+				TransportType:  1,
+				Server:         server,
+				ClientInstance: client,
+			},
+			Name:        t.Name,
+			Description: toolDescription,
+			InputSchema: t.InputSchema,
+		}
+	}
 	return nil
 }
 
@@ -122,14 +157,39 @@ func InitAllClients(servers []config.McpServerConfig) {
 			if err != nil {
 				log.Println(err.Error())
 			}
-
-			fmt.Println(s)
+		} else if s.Type == "http" {
+			server := &HttpServer{
+				BaseUrl: s.BaseUrl,
+				Path:    s.Path,
+			}
+			err = server.Register()
+			if err != nil {
+				log.Println(err.Error())
+			}
 		}
 	}
 }
 
 func toolTextResponse(text string) *mcp.ToolResponse {
 	return mcp.NewToolResponse(mcp.NewTextContent(text))
+}
+
+func SchemaFromInterface(schema interface{}) (*jsonschema.Schema, error) {
+	switch schema := schema.(type) {
+	case []byte:
+		return BytesToJSONSchema(schema)
+	case *jsonschema.Schema:
+		return schema, nil
+	case map[string]interface{}:
+		bytes, err := json.Marshal(schema)
+		if err != nil {
+			return nil, err
+		}
+		return BytesToJSONSchema(bytes)
+	default:
+		log.Println("Unsupported schema type")
+		return nil, errors.New("unsupported schema type")
+	}
 }
 
 func RegisterForServer() (*mcp.Server, error) {
@@ -140,51 +200,14 @@ func RegisterForServer() (*mcp.Server, error) {
 			return v.BelongClient.ClientInstance.CallTool(context.Background(), name, arguments)
 		}
 
-		//log.Printf("Tool %s schema: %+v", name, jsonschema.Reflect(v.InputSchema))
-		//inputSchema := v.InputSchema.(jsonschema.Schema)
-		//jsonschema.Reflect(inputSchema)
-
-		var schema *jsonschema.Schema
-
-		switch inputSchema := v.InputSchema.(type) {
-		case []byte:
-			// 直接从 bytes 反序列化
-			schema, err = BytesToJSONSchema(inputSchema)
-			if err != nil {
-				log.Printf("Failed to unmarshal schema for tool %s: %v", name, err)
-				continue
-			}
-
-		case *jsonschema.Schema:
-			// 已经是 Schema 类型
-			schema = inputSchema
-
-		case map[string]interface{}:
-			// 如果是 map，先转换成 JSON bytes
-			bytes, err := json.Marshal(inputSchema)
-			if err != nil {
-				log.Printf("Failed to marshal schema map for tool %s: %v", name, err)
-				continue
-			}
-			schema, err = BytesToJSONSchema(bytes)
-			if err != nil {
-				log.Printf("Failed to unmarshal schema bytes for tool %s: %v", name, err)
-				continue
-			}
-
-		default:
-			log.Printf("Unsupported schema type for tool %s: %T", name, v.InputSchema)
-			continue
+		schema, err := SchemaFromInterface(v.InputSchema)
+		if err != nil {
+			return nil, err
 		}
-
-		// 确保 Properties 不为 nil
-		//if schema.Properties == nil {
-		//	schema.Properties = make(map[string]*jsonschema.Schema)
-		//}
 
 		err = server.RegisterToolWithInputSchema(name, v.Description, handler, schema)
 		if err != nil {
-			log.Println(err)
+			return nil, err
 		}
 	}
 	return server, err

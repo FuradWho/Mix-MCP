@@ -5,6 +5,8 @@ type McpServerConfig struct {
 	Command string   `json:"command"`
 	Args    []string `json:"args"`
 	Env     []string `json:"env"`
+	BaseUrl string   `json:"base_url"`
+	Path    string   `json:"path"`
 }
 
 type Config struct {
