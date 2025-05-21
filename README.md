@@ -13,7 +13,7 @@
 
 # Mix-MCP
 
-## ETH Beijing Hackathon (AI x Crypto Track) Runner-up 🥈
+## 2025 ETH Beijing Hackathon (AI x Crypto Track) Runner-up 🥈
 
 <div align="center" style="font-size: 1.5em;">
   <p><strong><a href="README.md">English</a>, <a href="README_CN.md">中文</a></strong></p>
